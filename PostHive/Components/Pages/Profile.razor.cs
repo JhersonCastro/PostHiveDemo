@@ -97,8 +97,8 @@ public partial class Profile
             fileStream.Close();
             if (UserState.CurrentUser != null)
             {
+                await UserService.UpdateAvatarAsync(UserState.CurrentUser.UserId, uniqueFileName);
                 UserState.CurrentUser.Avatar = uniqueFileName;
-                await UserService.UpdateUserAsync(UserState.CurrentUser);
                 await InvokeAsync(StateHasChanged);
                 Snackbar.Add("Avatar updated", Severity.Success);
             }

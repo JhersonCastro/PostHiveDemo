@@ -59,35 +59,8 @@ namespace PostHive.Services
                 Console.WriteLine($"Nuevo usuario registrado: {newUser.Name}, ID: {newUser.UserId}");
             }
             return newUser;
-
-            /*credential.Password = HashPassword(credential.Password);
-
-            await using var context = await contextFactory.CreateDbContextAsync();
-
-            CheckIfUserExists(context, user);
-            CheckIfCredentialsExist(context, credential);
-
-            var userEntity = await context.Users.AddAsync(user);
-            await context.SaveChangesAsync();
-
-            credential.UserId = user.UserId;
-            await context.Credentials.AddAsync(credential);
-            await context.SaveChangesAsync();
-
-            return userEntity.Entity;*/
         }
 
-        private void CheckIfUserExists(DatabaseContext context, User user)
-        {
-            if (context.Users.Any(u => u.NickName == user.NickName))
-                throw new Exception("User already exists.");
-        }
-
-        private void CheckIfCredentialsExist(DatabaseContext context, Credential credential)
-        {
-            if (context.Credentials.Any(c => c.Email == credential.Email))
-                throw new Exception("Credentials already exist.");
-        }
 
         private string HashPassword(string password)
         {
@@ -121,7 +94,29 @@ namespace PostHive.Services
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
+        public async Task UpdateAvatarAsync(int userId, string newAvatar)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            var useridParam = new SqlParameter("@UserId", System.Data.SqlDbType.Int)
+            {
+                Value = userId
+            };
 
+            var avatarParam = new SqlParameter("@Avatar", System.Data.SqlDbType.NVarChar, 50)
+            {
+                Value = newAvatar
+            };
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "EXEC spUpdateAvatar @Avatar, @UserId", avatarParam, useridParam);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new Exception("Error updating avatar", e);
+            }
+        }
         public async Task UpdateUserAsync(User userChange)
         {
             await using var context = await contextFactory.CreateDbContextAsync();

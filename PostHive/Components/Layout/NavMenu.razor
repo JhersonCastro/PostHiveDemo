@@ -1,0 +1,43 @@
+﻿@inject NavigationManager navigationManager
+<header >
+    <MudNavMenu Class="navbar navbar-expand-lg">
+        <MudNavLink Href="/" Ripple >Bucket Network</MudNavLink>
+        @ChildContent
+        @if(_userModel != null){
+            <EditForm class="" EditContext="_editContext" OnSubmit="HandlerSubmit" autocomplete="off">
+                <MudTextField @bind-Value="@_userModel.Nickname" Label="@("@")" Placeholder="Username" InputType="InputType.Text"></MudTextField>
+            </EditForm>
+        }
+    </MudNavMenu>
+</header>
+@code{
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private EditContext? _editContext;
+    private UserName? _userModel;
+    /// <summary>
+    /// Class for the username
+    /// </summary>
+    public class UserName
+    {
+        public string? Nickname {get; set; }
+    }
+    protected override void OnInitialized()
+    {
+        _userModel = new UserName();
+        _editContext = new EditContext(_userModel);
+    }
+    /// <summary>
+    /// Search the username that the user has entered
+    /// </summary>
+    /// <param name="edit">context for the username</param>
+    private void HandlerSubmit(EditContext edit)
+    {
+        var user2Search = (UserName)edit.Model;
+        if(string.IsNullOrEmpty(user2Search.Nickname))
+    
+        return;
+        navigationManager.NavigateTo($"/search?username={user2Search.Nickname}", true, false);
+    }
+}

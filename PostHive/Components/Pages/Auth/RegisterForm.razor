@@ -1,0 +1,100 @@
+﻿@using DbContext
+@using PostHive.Services
+@inject CookiesService CookiesService
+@inject UserService UserService
+@inject UserState UserState
+@inject NavigationManager NavigationManager
+@inject LocalStorageService LocalStorageService
+
+<EditForm Model="_registerRequest" OnValidSubmit="HandlerRegisterSubmit">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem>
+            <MudText 
+                Color="Color.Primary">
+                Register Form
+            </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField Label="Name"
+                          @bind-Value="_registerRequest.Name"
+                          For="@(() => _registerRequest.Name)"
+                          Required="true" />
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudTextField Label="Nick Name"
+                          @bind-Value="_registerRequest.NickName"
+                          For="@(() => _registerRequest.NickName)"
+                          Required="true" />
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudTextField Label="Email"
+                          @bind-Value="_registerRequest.Email"
+                          For="@(() => _registerRequest.Email)"
+                          Required="true"
+                          InputType="InputType.Email" />
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudTextField Label="Password"
+                          @bind-Value="_registerRequest.Password"
+                          For="@(() => _registerRequest.Password)"
+                          Required="true"
+                          InputType="InputType.Password" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end" Style="margin-top: 16px;">
+            <MudButton ButtonType="ButtonType.Button"
+                       Variant="Variant.Filled"
+                       Color="Color.Info"
+                       @onclick="() => OnChangeFormClick.InvokeAsync()">
+                Change form
+            </MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="ml-2">
+                Submit
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter] public EventCallback OnChangeFormClick { get; set; }
+
+    private Credentials.RegisterRequest _registerRequest = new Credentials.RegisterRequest();
+    public string? Message;
+
+    private async Task HandlerRegisterSubmit()
+    {
+        try
+        {
+            var user = new DbContext.Models.User
+                {
+                    Name = _registerRequest.Name,
+                    NickName = _registerRequest.NickName
+                };
+            var credential = new DbContext.Models.Credential
+                {
+                    Email = _registerRequest.Email,
+                    Password = _registerRequest.Password
+                };
+            var response = await UserService.CreateUserAsync(user, credential);
+            UserState.CurrentUser = response;
+
+            var value = await CookiesService.AddCookieCurrentSession(response);
+            await LocalStorageService.SetItemAsync("CurrentSession", value);
+
+            NavigationManager.NavigateTo("/profile", true);
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            StateHasChanged();
+        }
+    }
+}

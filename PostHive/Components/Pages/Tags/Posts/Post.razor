@@ -1,0 +1,71 @@
+﻿@using PostHive.Components.Pages.Tags.Dialogs
+@using PostHive.Services
+@inject IJSRuntime JsRuntime
+@inject IDialogService DialogService
+@inject CookiesService CookiesService
+
+<div class="row justify-content-center">
+    <MudCard Class="col-10 col-sm-10 col-md-10 col-lg-10 mb-5">
+        <MudCardHeader>
+            <CardHeaderAvatar>
+                <MudAvatar Size="Size.Large">
+                    <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{CurrentPost.User.Avatar}")" Alt="Avatar"
+                    Style="border-radius:50%; max-height:150px"></MudImage>
+                </MudAvatar>
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudLink Href="@($"{Const.url}/User/{CurrentPost.User.UserId}")">
+                    <MudText Typo="Typo.body1">@CurrentPost.User.Name</MudText>
+                    <MudText Typo="Typo.body2">@CurrentPost.User.NickName</MudText>
+                </MudLink>
+            </CardHeaderContent>
+            <CardHeaderActions>
+                <MudPaper Elevation="0">
+                    @if (OnDeleteClick.HasDelegate)
+                    {
+                        <MudButton OnClick="() => DeleteId(CurrentPost)" Color="Color.Error">
+                            <MudIcon Icon="@Icons.Material.Outlined.Delete"></MudIcon>
+                        </MudButton>
+                    }
+                    <MudText Typo="Typo.h5">@CurrentPost.CreatedDate.ToShortDateString()</MudText>
+                    @{
+                        var icon = CurrentPost.Privacy switch
+                        {
+                            PostPrivacy.p_public => @Icons.Material.Outlined.Public,
+                            PostPrivacy.p_private => @Icons.Material.Filled.Lock,
+                            PostPrivacy.p_only_friends => @Icons.Material.Filled.PeopleAlt,
+                            _ => ""
+                        };
+                    }
+
+                    <MudIcon Icon="@icon"></MudIcon>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenDialogAsync">Share Post</MudButton>
+                </MudPaper>
+            </CardHeaderActions>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.h4">@CurrentPost.Body</MudText>
+            <section class="row g-3 p-3 justify-content-center">
+                @foreach (var media in CurrentPost.Files)
+                {
+                    <div class="col-sm-12 @(CurrentPost.Files.Count == 1 ? "col-md-10 col-lg-8": "col-md-6 col-lg-4") mb-2">
+                        @if (media.FileType.Split('/')[0] == "video")
+                        {
+                            <video class='same-size rounded-5' controls>
+                                <source src='@Const.url/Doctypes/@media.Uri' type="@media.FileType">
+                            </video>
+                        }
+                        else
+                        {
+                            <img loading='lazy' class='same-size rounded-5' src='@Const.url/Doctypes/@media.Uri' alt='Image' />
+                        }
+                    </div>
+                }
+            </section>
+
+        </MudCardContent>
+        <MudCardContent>
+            <Comment post="CurrentPost" CurrentUser="CurrentUser" />
+        </MudCardContent>
+    </MudCard>
+</div>

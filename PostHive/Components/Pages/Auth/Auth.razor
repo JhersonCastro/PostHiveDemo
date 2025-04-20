@@ -1,0 +1,38 @@
+﻿@page "/auth"
+@using PostHive.Services
+@using DbContext
+@inject CookiesService CookiesService
+@inject UserService UserService
+@inject UserState UserState
+@inject NavigationManager NavigationManager
+@inject LocalStorageService LocalStorageService
+
+<PageTitle>Auth</PageTitle>
+
+
+    <MudContainer Style="position: absolute;">
+        <MudContainer style="@((!IsLoginActive ? "display:block;" : "display:none;"))">
+            <MudPaper Elevation="3" style="padding: 32px; width: 300px;">
+                <RegisterForm OnChangeFormClick="ChangeForm" />
+            </MudPaper>
+        </MudContainer>
+
+        <MudContainer style="@((IsLoginActive ? "display:block;" : "display:none;"))">
+            <MudPaper Elevation="3" style="padding: 32px; width: 300px;">
+                <LoginForm OnChangeFormClick="ChangeForm" />
+            </MudPaper>
+        </MudContainer>
+    </MudContainer>
+
+
+
+
+@code{
+    public bool IsLoginActive = false;
+
+    public void ChangeForm()
+    {
+        IsLoginActive = !IsLoginActive;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,42 @@
+﻿@using PostHive.Services
+@inject CookiesService CookieService
+@inject PostService PostService
+@inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
+
+<div class="row g-3 justify-content-center">
+    @foreach (var comment in post.Comments.OrderBy(c=>c.CommentId))
+    {
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Size="Size.Large">
+                        <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{comment.User.Avatar}")" Alt="Avatar" Style="border-radius:50%; max-height:150px"></MudImage>
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudLink Href="@($"{Const.url}/User/{comment.User.UserId}")">
+                        <MudText Typo="Typo.body1">@comment.User.Name</MudText>
+                        <MudText Typo="Typo.body2">@@@comment.User.NickName</MudText>
+                    </MudLink>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    @if (comment.UserId == CurrentUser?.UserId){
+                        <MudPaper>
+                            <MudButton Color="Color.Error" OnClick="() => DeleteId(comment.CommentId)">
+                                <MudIcon Icon="@Icons.Material.Filled.Delete"></MudIcon>
+                            </MudButton>
+                        </MudPaper>
+                    }
+                </CardHeaderActions>
+
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.h4">@comment.CommentText</MudText>
+            </MudCardContent>
+        </MudCard>
+
+    }
+    <UserComment Post="post" CurrentUser="CurrentUser"></UserComment>
+</div>

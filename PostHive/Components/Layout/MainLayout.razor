@@ -1,0 +1,29 @@
+﻿@inherits LayoutComponentBase
+@using Services
+@inject ThemeState ThemeState
+
+@* Required *@
+<MudThemeProvider @bind-IsDarkMode="@ThemeState.IsDark" />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+<NavMenu>
+    <MudSwitch @bind-Value="@ThemeState.IsDark" Class="col-auto" Color="Color.Primary" ThumbIcon="@Icons.Material.Filled.Brightness4"></MudSwitch>
+</NavMenu>
+
+@Body
+
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        ThemeState.IsDark = true;
+        base.OnInitialized();
+    }
+}

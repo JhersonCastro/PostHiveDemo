@@ -1,0 +1,82 @@
+﻿@page "/Chats/CommunityChat"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+
+<div class="container d-flex justify-content-center">
+    <div>
+        @foreach (var message in Messages)
+        {
+            <p>@message</p>
+        }
+
+        <EditForm EditContext="_editContext" OnValidSubmit="SendMessage">
+            <div class="form-group">
+                @if (_msgModel != null)
+                {
+                    <InputText @bind-Value="_msgModel.Msg" class="form-control" />
+                }
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Send</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private static int i = 0;
+    private string _newGuest = "";
+
+    public List<string> Messages = [];
+    EditContext? _editContext;
+    MsgModel? _msgModel;
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _msgModel = new MsgModel();  
+        _editContext = new EditContext(_msgModel);  
+        _hubConnection = new HubConnectionBuilder()
+                        .WithUrl(NavigationManager.ToAbsoluteUri("/ChatHub"))
+                        .Build();
+        _hubConnection.On<string>("ReceiveCommunityChat", (message) =>
+        {
+            Messages.Add(message);
+            InvokeAsync(StateHasChanged); 
+        });
+        _newGuest = "guest " + i;
+        i++;
+        await _hubConnection.StartAsync();
+    }
+
+    public async Task SendMessage()
+    {
+        try
+        {
+            if (_msgModel == null || _hubConnection == null)
+                return;
+            await _hubConnection.InvokeAsync("SendMessageToCommunity", _newGuest + " says: " + _msgModel.Msg);
+            _msgModel.Msg = string.Empty;
+            if (Messages.Count > 100)
+                Messages.RemoveRange(0, 50);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hubConnection != null)
+        {
+            await _hubConnection.DisposeAsync();
+        }
+    }
+
+    public class MsgModel
+    {
+        [Required]
+        [MinLength(1)]
+        public string? Msg { get; set; }  
+    }
+}

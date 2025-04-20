@@ -1,0 +1,23 @@
+﻿@page "/User/{Id}"
+@using PostHive.Services
+@inject UserService UserService
+@inject UserState UserState
+@inject PostService PostService
+@inject NavigationManager NavigationManager
+@inject CookiesService CookiesService
+
+@if (_userContext != null)
+{
+    <PageTitle>@_userContext.Name</PageTitle>
+
+        <PostHive.Components.Pages.Tags.Utils.UserHeader _userContext="@_userContext"></PostHive.Components.Pages.Tags.Utils.UserHeader>
+
+        @foreach (var post in _userContext.Posts.OrderByDescending(p => p.CreatedDate))
+        {
+            <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser"></PostHive.Components.Pages.Tags.Posts.Post>
+        }
+}
+else
+{
+    <PostHive.Components.Pages.Tags.Utils.SpinCircle/>
+}

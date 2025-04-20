@@ -1,0 +1,55 @@
+﻿@page "/Search"
+@using Services
+@inject UserService UserServices
+<PageTitle></PageTitle>
+<div>
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <p class="text-danger">@_errorMessage</p>
+        <MudButton Href="/" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary">
+            Go home
+        </MudButton>
+    }
+</div>
+<div class="row justify-content-center g-3 m-3">
+    @if(_users.Count == 0 && string.IsNullOrEmpty(_errorMessage))
+    {
+        <PostHive.Components.Pages.Tags.Utils.SpinCircle/>
+    }
+    else
+    {
+        @foreach (var user in _users)
+        {
+            <MudLink Href="@($"{Const.url}/User/{user.UserId}")" Class="col-12 col-md-6 col-lg-4 mb-4">
+                <MudCard Elevation="4" Class="h-100 " Style="box-shadow: 4px 4px 2px 4px black;">
+                    <MudCardHeader>
+                        <img src="@($"{Const.url}/Doctypes/Avatars/{user.Avatar}")" alt="Avatar" 
+                        style="max-height:100px; border-radius:50%; aspect-ratio:1; object-fit:cover"/>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h5">@user.Name</MudText>
+                        <MudText Typo="Typo.subtitle2">@user.NickName</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudLink>
+        }
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Username { get; set; }
+    private List<User> _users = [];
+    private string? _errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        _users.Clear();
+        await Task.Delay(150);
+        _users = await UserServices.PredictUserAsync(Username);
+        if (_users.Count == 0)
+            _errorMessage = "No users found";
+        StateHasChanged();
+
+    }
+
+}

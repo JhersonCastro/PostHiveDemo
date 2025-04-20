@@ -1,0 +1,23 @@
+﻿<MudDialog>
+    <TitleContent>
+        @Title
+    </TitleContent>
+    <DialogContent>
+        <h3>@Content</h3>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Ok">Share</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public string Title { get; set; } = "Share Post";
+    [Parameter] public string Content { get; set; } = "";
+
+    void Cancel() => MudDialog.Cancel();
+    void Ok() => MudDialog.Close(DialogResult.Ok(true));
+}

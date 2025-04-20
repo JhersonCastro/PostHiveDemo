@@ -1,0 +1,86 @@
+﻿@using DbContext
+@using PostHive.Services
+@inject UserService UserService
+@inject CookiesService CookiesService
+@inject UserState UserState
+@inject NavigationManager NavigationManager
+@inject LocalStorageService LocalStorageService
+@inject ISnackbar Snackbar
+
+<EditForm Model="_loginRequest" OnValidSubmit="HandlerLoginSubmit">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem>
+            <MudText 
+                Color="Color.Primary"
+                >
+                Login Form
+            </MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField Label="Email"
+                          @bind-Value="_loginRequest.Email"
+                          For="@(() => _loginRequest.Email)"
+                          Required="true"
+                          InputType="InputType.Email" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField Label="Password"
+                          @bind-Value="_loginRequest.Password"
+                          For="@(() => _loginRequest.Password)"
+                          Required="true"
+                          InputType="InputType.Password" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end" Style="margin-top: 16px;">
+            <MudButton ButtonType="ButtonType.Button"
+                       Variant="Variant.Filled"
+                       Color="Color.Info"
+                       @onclick="() => OnChangeFormClick.InvokeAsync()">
+                Change Form
+            </MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="ml-2">
+                Submit
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter] public EventCallback OnChangeFormClick { get; set; }
+
+    // Instancia del request de login.
+    private Credentials.LoginRequest _loginRequest = new Credentials.LoginRequest();
+    public string? Message;
+
+    // Este método se ejecuta cuando el formulario se envía exitosamente.
+    public async Task HandlerLoginSubmit()
+    {
+        try
+        {
+            var credentials = new DbContext.Models.Credential
+                {
+                    Email = _loginRequest.Email,
+                    Password = _loginRequest.Password
+                };
+
+            var user = await UserService.AuthenticateLoginAsync(credentials);
+            if (user != null)
+            {
+                UserState.CurrentUser = user;
+                var value = await CookiesService.AddCookieCurrentSession(user);
+                await LocalStorageService.SetItemAsync("CurrentSession", value);
+                NavigationManager.NavigateTo("/profile", true);
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+    }
+}

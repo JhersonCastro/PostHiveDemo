@@ -1,0 +1,44 @@
+﻿@page "/Post/{Id}"
+@using Services
+@inject PostService PostService
+@inject CookiesService CookieService
+@inject UserState UserState
+
+
+@if (string.IsNullOrEmpty(Error) && CurrentPost != null)
+{
+    <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@CurrentPost" CurrentUser="@UserState.CurrentUser"></PostHive.Components.Pages.Tags.Posts.Post>
+}
+else{
+    <p class="text-danger">@Error</p>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = null!;
+
+    public string? Error { get; set; }
+    public Post? CurrentPost { get; set; }
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            Error = "";
+            var idPost = int.Parse(Id);
+            UserState.CurrentUser = await CookieService.RetrievedUser(UserState.CurrentUser);
+            CurrentPost = await PostService.GetPostByIdAsync(idPost);
+
+
+            CurrentPost = await PostService.GetPostByIDAsync(CurrentPost!.User, UserState.CurrentUser, idPost);
+
+            if(CurrentPost == null)
+                Error = "Post not found";
+        }
+        catch 
+        {
+            Error = "Post not found";
+        }
+        StateHasChanged();
+    }
+
+}

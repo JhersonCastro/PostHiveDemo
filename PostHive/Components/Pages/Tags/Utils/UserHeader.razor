@@ -1,0 +1,33 @@
+﻿@inject IWebHostEnvironment WebHotEnv
+<MudGrid Justify="Justify.Center" Spacing="5">
+    <MudItem xs="12" sm="9" md="8" lg="5">
+        <MudCard Elevation="25">
+            <MudCardHeader Class="justify-content-center position-relative">
+                <MudImage ObjectPosition="ObjectPosition.Center" Src="@($"{Const.url}/Doctypes/Avatars/{_userContext.Avatar}")" Style="max-height:200px;"></MudImage>
+                @if (uploadFiles.HasDelegate)
+                {
+                    <MudFileUpload Accept=".png,.jpg,.jpeg" 
+                    Class="position-absolute bottom-0 end-0 mb-2 me-2"
+                                   T="IBrowserFile"
+                                   FilesChanged="(async (files) => 
+                                            {
+                                                await uploadFiles.InvokeAsync(files);
+                                            })">
+                        <ActivatorContent>
+                            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" />
+                        </ActivatorContent>
+                    </MudFileUpload>
+                }
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.h1">@_userContext.Name</MudText>
+                <MudText Typo="Typo.h2" Style="@($"color:{Colors.Blue.Default}")">@@@_userContext.NickName</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public required User _userContext { get; set; }
+    [Parameter] public EventCallback<IBrowserFile> uploadFiles { get; set; }
+}

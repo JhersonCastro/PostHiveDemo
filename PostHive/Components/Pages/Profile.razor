@@ -1,0 +1,83 @@
+﻿@page "/Profile"
+@using PostHive.Services
+@inject ISnackbar Snackbar
+
+@inject UserState UserState
+@inject PostService PostService
+@inject NavigationManager NavigationManager
+@inject IWebHostEnvironment WebHotEnv
+@inject UserService UserService
+@inject CookiesService CookiesService
+
+<div>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <p class="text-danger">Error: @_error</p>
+    }
+</div>
+
+@if (UserState.CurrentUser==null)
+{
+    <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
+}else
+{
+    <PageTitle>@UserState.CurrentUser.Name</PageTitle>
+
+    <PostHive.Components.Pages.Tags.Utils.UserHeader 
+    _userContext="UserState.CurrentUser" 
+    uploadFiles="BtnAvatarHandlerAsync"/>
+    
+
+
+
+    <div class="d-flex justify-content-center my-5">
+        <div class="col-12 col-md-10 col-lg-8 p-4">
+            <EditForm EditContext="_editPostContext" FormName="CurrentPostContent" OnValidSubmit="HandlerPost">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <MudSelect @bind-Value="@_postModel!.Privacy">
+                    @foreach (var value in Enum.GetValues<PostPrivacy>())
+                    {
+                        <MudSelectItem Value="@value">@value</MudSelectItem>
+                    }
+                </MudSelect>
+                <br />
+                <MudTextField Lines="3" Placeholder="Write something..." Label="Body" @bind-Value="@_postModel.Body" />
+                <br />
+                <div class="row justify-content-end">
+                    <label for="inputPostFile" class="col-auto same-sizebtn"> 
+                        <MudIcon Icon="@Icons.Material.Rounded.FileUpload" class="IconHover same-sizebtn"></MudIcon>
+                        <InputFile OnChange="BtnUploadPostFiles" multiple accept=".png,.jpg,.jpeg,.mp4" id="inputPostFile" style="display:none"/>
+                    </label>
+
+                    <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Publish" ButtonType="ButtonType.Submit" class="col-auto same-sizebtn">Post!</MudButton>
+                </div>
+            </EditForm>
+            <section class='row g-3 p-3 justify-content-center'>
+                @if (_currentUploadFiles > 0)
+                {
+                    <p>Please don't close this page, Uploading @_currentUploadFiles files</p>
+                }
+                @foreach (var file in _fileProgresses.Keys)
+                {
+                    <div class="progress mt-2"> 
+                        <div class="progress-bar" role="progressbar" style="width: @(_fileProgresses[file])%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            @($"{_fileProgresses[file]:0.00}%")
+                        </div> 
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+    @foreach (var post in UserState.CurrentUser.Posts.OrderByDescending(p=> p.CreatedDate))
+    {
+        <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser" OnDeleteClick="DeleteId"></PostHive.Components.Pages.Tags.Posts.Post>
+    }
+
+
+}
+<style>
+    .IconHover:hover{
+    cursor: pointer;
+    }
+</style>

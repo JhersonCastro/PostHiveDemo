@@ -1,0 +1,40 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using PostHive.Services
+@using Microsoft.AspNetCore.SignalR.Client
+@inject PostService PostService
+@inject NavigationManager Navigation
+
+@if (CurrentUser != null && _commentModel != null)
+{
+    <div class="mt-5 row">
+        <MudItem xs="12" sm="2" lg="2" class="d-flex justify-content-center align-items-center">
+            <MudPaper Class="d-flex justify-content-center align-items-center" Style="height: 100%;">
+                <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{CurrentUser.Avatar}")" Alt="Avatar" Style="max-height: 150px; border-radius: 50%;" />
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="10" lg="10" class="d-flex flex-column">
+            <EditForm EditContext="EditContext" OnValidSubmit="HandlerSend">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <MudCard>
+                    <MudCardContent>
+                        <MudText Typo="Typo.h4">@CurrentUser.Name</MudText>
+                        <MudTextField autocomplete="false" T="string" @bind-Value="@_commentModel.CommentText" FullWidth="true" Label="Enter your comment here..." Style="margin-top: 1rem;" />
+                    </MudCardContent>
+                    <MudCardActions class="d-flex justify-content-end">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Success" Class="ml-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Send" />
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+        </MudItem>
+    </div>
+
+}
+else
+{
+    <p>Please log in to upload file</p>
+}

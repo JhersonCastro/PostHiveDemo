@@ -1,0 +1,5 @@
+﻿@using PostHive.Services
+@inject ThemeState ThemeState
+<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <Circle Center="true" Color="@(ThemeState.IsDark ? "White" : "Black")" />
+</div>

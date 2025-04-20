@@ -1,0 +1,188 @@
+﻿using System.ComponentModel.DataAnnotations;
+using DbContext.Models;
+using Microsoft.AspNetCore.Components.Forms;
+using MudBlazor;
+
+namespace PostHive.Components.Pages;
+
+public partial class Profile
+{
+    private EditContext? _editPostContext;
+    private PostModel _postModel = new();
+    private EditContext? _editUserUpdate;
+    private UserUpdate _userModelUpdate = new();
+    private string? _error;
+    private int _currentUploadFiles;
+
+    public class UserUpdate
+    {
+        [Required] [MinLength(5)] public string? Name { get; set; }
+
+        [Required] [MinLength(5)] public string? NickName { get; set; }
+        [MinLength(0)] public string Bio { get; set; } = "";
+    }
+
+    public class PostModel
+    {
+        [Required]
+        [MinLength(1, ErrorMessage = "The body must have at least 1 character")]
+        public string? Body { get; set; }
+
+        [Required] public PostPrivacy Privacy { get; set; }
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        _editPostContext = new EditContext(_postModel);
+        _editUserUpdate = new EditContext(_userModelUpdate);
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
+                if (UserState.CurrentUser == null)
+                    throw new Exception("User not found");
+                _userModelUpdate = new UserUpdate
+                {
+                    Name = UserState.CurrentUser.Name, NickName = UserState.CurrentUser.NickName,
+                    Bio = UserState.CurrentUser.Bio
+                };
+                _editUserUpdate = new EditContext(_userModelUpdate);
+                await Task.Delay(100);
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving session: {ex.Message}");
+                NavigationManager.NavigateTo("/");
+            }
+        }
+    }
+
+    private async Task DeleteId(Post? post)
+    {
+        if (post == null)
+            return;
+        try
+        {
+            await PostService.DeletePostAsync(post.PostId);
+            UserState.CurrentUser?.Posts.Remove(post);
+            _error = string.Empty;
+            Snackbar.Add("Post Deleted", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            UserState.CurrentUser?.Posts.Remove(post);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task BtnAvatarHandlerAsync(IBrowserFile e)
+    {
+        var browserFile = e;
+        try
+        {
+            var fileStream = browserFile.OpenReadStream(Const.MaxFileSize);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "." + browserFile.Name.Split('.').Last();
+            var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes/Avatars", uniqueFileName);
+            var file = new FileStream(path, FileMode.Create, FileAccess.Write);
+            await fileStream.CopyToAsync(file);
+            file.Close();
+            fileStream.Close();
+            if (UserState.CurrentUser != null)
+            {
+                UserState.CurrentUser.Avatar = uniqueFileName;
+                await UserService.UpdateUserAsync(UserState.CurrentUser);
+                await InvokeAsync(StateHasChanged);
+                Snackbar.Add("Avatar updated", Severity.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+            Snackbar.Add("Error updating avatar, try later", Severity.Error);
+        }
+    }
+
+    private readonly string[] _allowedExtensions = ["jpg", "mp4", "png", "jpeg"];
+    private readonly Dictionary<Files, double> _fileProgresses = new Dictionary<Files, double>();
+
+    private async Task BtnUploadPostFiles(InputFileChangeEventArgs e)
+    {
+        var browserFiles = e.GetMultipleFiles();
+        _currentUploadFiles += browserFiles.Count();
+        foreach (var file in browserFiles)
+        {
+            try
+            {
+                if (!_allowedExtensions.Contains(file.Name.Split('.').Last()))
+                    throw new Exception("Invalid file type");
+
+                var fileName = Path.GetFileName(file.Name);
+                var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+                var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes", uniqueFileName);
+
+
+                await using var fileStream = new FileStream(path, FileMode.Create);
+                var buffer = new byte[81920];
+                var readBytes = 0;
+                var readStream = file.OpenReadStream(Const.MaxFileSizePost);
+
+                long totalBytes = file.Size;
+                long uploadedBytes = 0;
+                var tempFile = new Files { Uri = uniqueFileName, FileType = file.ContentType };
+
+                while ((readBytes = await readStream.ReadAsync(buffer)) != 0)
+                {
+                    await fileStream.WriteAsync(buffer, 0, readBytes);
+                    uploadedBytes += readBytes;
+                    var progress = (uploadedBytes / (double)totalBytes) * 100;
+                    _fileProgresses[tempFile] = progress;
+                    StateHasChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                _error = ex.Message;
+            }
+
+            _currentUploadFiles--;
+        }
+    }
+
+    private async Task HandlerPost(EditContext editContext)
+    {
+        if (UserState.CurrentUser == null || _postModel?.Body == null)
+            return;
+
+        if (_currentUploadFiles > 0)
+            _error = "Still uploading files, please wait";
+        var files = _fileProgresses.Keys.Select(file => new Files() { Uri = file.Uri, FileType = file.FileType })
+            .ToList();
+
+        var post = new Post
+        {
+            UserId = UserState.CurrentUser.UserId,
+            Body = _postModel.Body,
+            Privacy = _postModel.Privacy,
+            CreatedDate = DateTime.UtcNow,
+            Files = files,
+            Comments = new List<Comments>()
+        };
+        var t = await PostService.CreatePostAsync(post);
+
+        _postModel.Body = "";
+        _postModel.Privacy = PostPrivacy.p_public;
+        _fileProgresses.Clear();
+        t.User = UserState.CurrentUser;
+        UserState.CurrentUser.Posts.Add(t);
+        Snackbar.Add("Post created", Severity.Success);
+        StateHasChanged();
+    }
+}

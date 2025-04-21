@@ -65,7 +65,7 @@ namespace PostHive.Services
             Console.WriteLine("Se guardo correctamente" + relationship.ToString());
             return s;
         }
-        private async Task<Relationship?> GetRelationship(User userA, User userB)
+        public async Task<Relationship?> GetRelationship(User userA, User userB)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 

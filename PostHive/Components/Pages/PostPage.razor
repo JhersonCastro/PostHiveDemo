@@ -10,33 +10,39 @@
     <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@CurrentPost" CurrentUser="@UserState.CurrentUser"></PostHive.Components.Pages.Tags.Posts.Post>
 }
 else{
-    <p class="text-danger">@Error</p>
+    if (string.IsNullOrEmpty(Error))
+    {
+        <PostHive.Components.Pages.Tags.Utils.SpinCircle />
+    }
+    else
+    {
+        <p class="text-danger">@Error</p>
+    }
 }
 
 @code {
     [Parameter]
     public string Id { get; set; } = null!;
 
-    public string? Error { get; set; }
+    public string? Error { get; set; } = null;
     public Post? CurrentPost { get; set; }
     protected override async Task OnParametersSetAsync()
     {
         try
         {
-            Error = "";
             var idPost = int.Parse(Id);
             UserState.CurrentUser = await CookieService.RetrievedUser(UserState.CurrentUser);
             CurrentPost = await PostService.GetPostByIdAsync(idPost);
 
 
-            CurrentPost = await PostService.GetPostByIDAsync(CurrentPost!.User, UserState.CurrentUser, idPost);
+            CurrentPost = await PostService.GetPostByIdAsync(CurrentPost!.User, UserState.CurrentUser, idPost, true);
 
             if(CurrentPost == null)
-                Error = "Post not found";
+                throw new Exception("Post not found");
         }
-        catch 
+        catch (Exception ex)
         {
-            Error = "Post not found";
+            Error = ex.Message;
         }
         StateHasChanged();
     }

@@ -7,7 +7,7 @@ using System.Data;
 
 namespace PostHive.Services
 {
-    public class PostService(IDbContextFactory<DatabaseContext> contextFactory, IWebHostEnvironment webHotEnv)
+    public class PostService(IDbContextFactory<DatabaseContext> contextFactory, IWebHostEnvironment webHotEnv, RelationshipService relationshipService)
     {
         public async Task<Post?> GetPostByIdAsync(int postId)
         {
@@ -88,22 +88,27 @@ namespace PostHive.Services
                     UserId = -1
                 };
 
-            var isFriend = await context.Relationship
-                                .AnyAsync(f => f.UserId == user.UserId && f.UserId == userRequest.UserId);
+            bool isFriend = false;
+            var relationship = await relationshipService.GetRelationship(user, userRequest);
+
+            if (relationship != null && relationship.Status == RelationshipStatus.blocked)
+                    return new List<Post>();
+            
+            isFriend = relationship?.Status == RelationshipStatus.accept ? true : false;
 
             var posts = await context.Posts
-                .Where(p => p.UserId == userRequest.UserId &&
-                            (p.Privacy == PostPrivacy.p_public ||
-                             isFriend && p.Privacy == PostPrivacy.p_only_friends))
-                .Include(p => p.Comments)
-                .ThenInclude(c => c.User)
-                .Include(p => p.Files)
-                .Include(p=>p.User)
-                .ToListAsync();
+                    .Where(p => p.UserId == userRequest.UserId &&
+                                (p.Privacy == PostPrivacy.p_public ||
+                                 isFriend && p.Privacy == PostPrivacy.p_only_friends))
+                    .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                    .Include(p => p.Files)
+                    .Include(p => p.User)
+                    .ToListAsync();
 
             return posts;
         }
-        public async Task<Post?> GetPostByIDAsync(User userRequest, User? user, int postId)
+        public async Task<Post?> GetPostByIdAsync(User userRequest, User? user, int postId, bool getUnlistedPost)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
 
@@ -113,13 +118,19 @@ namespace PostHive.Services
                     UserId = -1
                 };
 
-            var isFriend = await context.Relationship
-                .AnyAsync(f => f.UserId == user.UserId && f.UserId == userRequest.UserId);
+            bool isFriend = false;
+            var relationship = await relationshipService.GetRelationship(user, userRequest);
+
+            if (relationship is { Status: RelationshipStatus.blocked })
+                return null;
+
+            isFriend = relationship?.Status == RelationshipStatus.accept;
 
             var posts = await context.Posts
                 .Where(p => p.UserId == userRequest.UserId &&
                             (p.Privacy == PostPrivacy.p_public ||
-                             isFriend && p.Privacy == PostPrivacy.p_only_friends))
+                             isFriend && p.Privacy == PostPrivacy.p_only_friends ||
+                             getUnlistedPost && p.Privacy == PostPrivacy.p_unlisted))
                 .Include(p => p.User)
                 .Include(p => p.Comments)
                 .ThenInclude(c => c.User)

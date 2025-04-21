@@ -25,7 +25,8 @@
                 {
                     <MudItem xs="12" sm="5"> 
                         <MudPaper>
-                        <PostHive.Components.Pages.Tags.Utils.FriendSection user="_userContext"></PostHive.Components.Pages.Tags.Utils.FriendSection>
+                        <PostHive.Components.Pages.Tags.Utils.FriendSection user="_userContext">
+                        </PostHive.Components.Pages.Tags.Utils.FriendSection>
                         </MudPaper>
                     </MudItem>
                     smSize = 7;
@@ -34,7 +35,8 @@
                     <MudPaper>
                     @foreach (var post in _userContext.Posts.OrderByDescending(p => p.CreatedDate))
                         {
-                            <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser"></PostHive.Components.Pages.Tags.Posts.Post>
+                            <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser">
+                            </PostHive.Components.Pages.Tags.Posts.Post>
                         }
                     </MudPaper>
                 </MudItem>

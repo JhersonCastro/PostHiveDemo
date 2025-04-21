@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostHive", "PostHive\PostHi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbContext", "DbContext\DbContext.csproj", "{12A4E6E3-608C-4046-8525-9CB54002698C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Posthive.TestBench", "Posthive.TestBench\Posthive.TestBench.csproj", "{77863BC9-566D-4700-B88D-241EE2732274}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBench", "TestBench\TestBench.csproj", "{0F3C992F-74C2-45F2-BF35-3E3E513E9BEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{12A4E6E3-608C-4046-8525-9CB54002698C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12A4E6E3-608C-4046-8525-9CB54002698C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12A4E6E3-608C-4046-8525-9CB54002698C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77863BC9-566D-4700-B88D-241EE2732274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77863BC9-566D-4700-B88D-241EE2732274}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77863BC9-566D-4700-B88D-241EE2732274}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77863BC9-566D-4700-B88D-241EE2732274}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F3C992F-74C2-45F2-BF35-3E3E513E9BEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F3C992F-74C2-45F2-BF35-3E3E513E9BEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F3C992F-74C2-45F2-BF35-3E3E513E9BEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F3C992F-74C2-45F2-BF35-3E3E513E9BEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

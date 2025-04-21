@@ -49,7 +49,7 @@ namespace PostHive.Services
             // Retrieve the output parameter value
             var userId = (int)userIdOutput.Value;
             // Fetch the newly created user
-            var newUser = await context.Users
+            User? newUser = await context.Users
                 .Include(u => u.Posts)
                 .ThenInclude(p => p.Files)
                 .FirstOrDefaultAsync(u => u.UserId == userId);
@@ -82,12 +82,42 @@ namespace PostHive.Services
                 throw new Exception("No user found with the provided email.");
 
             if (VerifyPassword(credential.Password, userCredential.Password))
-                return await context.Users
+            {
+                var user = await context.Users
                     .Include(u => u.Posts)
                     .ThenInclude(p => p.Files)
                     .FirstOrDefaultAsync(u => u.UserId == userCredential.UserId);
+                user.Friends = await GetFriendsAsync(user.UserId);
+                return user;
+            }
 
-            throw new Exception("The password does not match the email.");
+                throw new Exception("The password does not match the email.");
+        }
+        public async Task<List<User>> GetFriendsAsync(int userId)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            var user = await context.Users
+                .Include(u => u.RelationshipsInitiated)
+                .ThenInclude(r => r.RelatedUser)
+                .Include(u => u.RelationshipsReceived)
+                .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user != null)
+            {
+                // Filtrar relaciones con estado 'accept' y combinar iniciadas y recibidas
+                var friends = user.RelationshipsInitiated
+                    .Where(r => r.Status == RelationshipStatus.accept)
+                    .Select(r => r.RelatedUser) // Amigos desde las relaciones iniciadas
+                    .Union(user.RelationshipsReceived
+                        .Where(r => r.Status == RelationshipStatus.accept)
+                        .Select(r => r.User)) // Amigos desde las relaciones recibidas
+                    .ToList();
+
+                return friends; // Lista final de amigos
+            }
+
+            return new List<User>(); // Devuelve una lista vacía si el usuario no existe
         }
 
         private bool VerifyPassword(string password, string hashedPassword)
@@ -132,6 +162,7 @@ namespace PostHive.Services
                 await context.SaveChangesAsync();
             }
         }
+
         /// <summary>
         /// Predicts and retrieves a list of users whose names or nicknames match the given prompt.
         /// </summary>
@@ -147,7 +178,6 @@ namespace PostHive.Services
         /// This method normalizes the input prompt by trimming whitespace and converting it to lowercase. 
         /// It performs a case-insensitive search on both the Name and NickName fields.
         /// </remarks>
-
         public async Task<List<User>> PredictUserAsync(string? nameOrNickname)
         {
             await using var context = await contextFactory.CreateDbContextAsync();

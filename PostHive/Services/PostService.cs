@@ -1,6 +1,9 @@
 ﻿using DbContext;
 using DbContext.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
+using System.Data;
 
 namespace PostHive.Services
 {
@@ -234,12 +237,48 @@ namespace PostHive.Services
             }
         }
 
-        public async Task<Post> CreatePostAsync(Post post)
+        public async Task<Post?> CreatePostAsync(Post post)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            await context.Posts.AddAsync(post);
-            await context.SaveChangesAsync();
+
+            DataTable filesTable = new DataTable();
+            filesTable.Columns.Add("FileType", typeof(string));
+            filesTable.Columns.Add("URI", typeof(string));
+
+            foreach (var file in post.Files)
+            {
+                filesTable.Rows.Add(file.FileType, file.Uri);
+            }
+            var userIdParam = new SqlParameter("@UserId", post.UserId);
+            var bodyParam = new SqlParameter("@Body", post.Body);
+            var privacyParam = new SqlParameter("@Privacy", (int)post.Privacy);
+            var createDateParam = new SqlParameter("@CreatedDate", post.CreatedDate);
+            var filesParam = new SqlParameter("@Files", SqlDbType.Structured)
+            {
+                TypeName = "dbo.FilesColecction",
+                Value = filesTable
+            };
+            var postIdOutput = new SqlParameter("@ReturnPostId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            try
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "EXEC INSERT_POST_FILES @UserId, @Body, @CreatedDate, @Privacy, @Files, @ReturnPostId OUTPUT",
+                    userIdParam, bodyParam, createDateParam, privacyParam, filesParam, postIdOutput);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            post.PostId = (int)postIdOutput.Value;
             return post;
+            //await using var context = await contextFactory.CreateDbContextAsync();
+            //await context.Posts.AddAsync(post);
+            //await context.SaveChangesAsync();
+            //return post;
         }
 
     }

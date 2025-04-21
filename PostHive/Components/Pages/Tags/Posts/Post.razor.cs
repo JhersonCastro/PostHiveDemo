@@ -9,7 +9,7 @@ public partial class Post
 {
     [Parameter] public required DbContext.Models.Post CurrentPost { get; set; }
 
-    [Parameter] public required User CurrentUser { get; set; }
+    [Parameter] public required User? CurrentUser { get; set; }
 
     [Parameter] public EventCallback<DbContext.Models.Post?> OnDeleteClick { get; set; }
 

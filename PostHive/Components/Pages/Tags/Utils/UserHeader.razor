@@ -1,33 +1,113 @@
-﻿@inject IWebHostEnvironment WebHotEnv
-<MudGrid Justify="Justify.Center" Spacing="5">
-    <MudItem xs="12" sm="9" md="8" lg="5">
-        <MudCard Elevation="25">
-            <MudCardHeader Class="justify-content-center position-relative">
-                <MudImage ObjectPosition="ObjectPosition.Center" Src="@($"{Const.url}/Doctypes/Avatars/{_userContext.Avatar}")" Style="max-height:200px;"></MudImage>
-                @if (uploadFiles.HasDelegate)
-                {
-                    <MudFileUpload Accept=".png,.jpg,.jpeg" 
-                    Class="position-absolute bottom-0 end-0 mb-2 me-2"
-                                   T="IBrowserFile"
-                                   FilesChanged="(async (files) => 
-                                            {
-                                                await uploadFiles.InvokeAsync(files);
-                                            })">
-                        <ActivatorContent>
-                            <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" />
-                        </ActivatorContent>
-                    </MudFileUpload>
-                }
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText Typo="Typo.h1">@_userContext.Name</MudText>
-                <MudText Typo="Typo.h2" Style="@($"color:{Colors.Blue.Default}")">@@@_userContext.NickName</MudText>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
-</MudGrid>
+﻿@using PostHive.Services
+@inject IWebHostEnvironment WebHotEnv
+@inject RelationshipService RelationshipService
+@inject UserState UserState
+@if (loading)
+{
+    <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
+}
+else
+{
+    <MudGrid Justify="Justify.Center" Spacing="5">
+        <MudItem xs="12" sm="9" md="8" lg="5">
+            <MudCard Elevation="25">
+                <MudCardHeader Class="justify-content-center position-relative">
+                    <MudImage ObjectPosition="ObjectPosition.Center" Src="@($"{Const.url}/Doctypes/Avatars/{_userContext.Avatar}")" Style="max-height:200px;"></MudImage>
+                    @if (uploadFiles.HasDelegate)
+                    {
+                        <MudStack Row="true"
+                        AlignItems="AlignItems.Center"
+                        Spacing="1"
+                        Class="position-absolute bottom-0 end-0">
 
+                            <MudTooltip Text="Change Avatar">
+                                <MudFileUpload Accept=".png,.jpg,.jpeg"
+                                T="IBrowserFile"
+                                FilesChanged="(async (files) =>
+                                           {
+                                               await uploadFiles.InvokeAsync(files);
+                                           })">
+                                    <ActivatorContent>
+                                        <MudFab Color="Color.Success" StartIcon="@Icons.Material.Filled.Upload" />
+                                    </ActivatorContent>
+                                </MudFileUpload>
+                            </MudTooltip>
+                            <MudTooltip Text="LogOut">
+                                <MudButton Class="no-hover" OnClick="(async()  => await logOutUser.InvokeAsync())">
+                                    <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" />
+                                </MudButton>
+                            </MudTooltip>
+
+                        </MudStack>
+                    }
+                    @*//TODO : Implement a relationship achievement*@
+                    @if (UserState.CurrentUser != null && _userContext != UserState.CurrentUser)
+                    {
+                        <MudStack Row="true"
+                        AlignItems="AlignItems.Center"
+                        Spacing="1"
+                        Class="position-absolute bottom-0 end-0">
+                            <MudButton OnClick="(async() => await SetRelationship())" StartIcon="@icon" IconSize="Size.Large" Color="Color.Primary">
+                            </MudButton>
+                        </MudStack>
+                    }
+
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.h1">@_userContext.Name</MudText>
+                    <MudText Typo="Typo.h2" Style="@($"color:{Colors.Blue.Default}")">@@@_userContext.NickName</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+<style>
+    .no-hover:hover {
+    background-color: unset; 
+    box-shadow: none; 
+    }
+</style>
 @code {
+    private string icon;
+    private bool loading = true;
     [Parameter] public required User _userContext { get; set; }
     [Parameter] public EventCallback<IBrowserFile> uploadFiles { get; set; }
+    [Parameter] public EventCallback logOutUser { get; set; }
+    [Parameter] public EventCallback<User> RemoveFriend { get; set; }
+    [Parameter] public EventCallback<User> AddFriend { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserState.CurrentUser != null && _userContext != UserState.CurrentUser)
+            icon = await RelationshipService.GetRelationIcon(UserState.CurrentUser, _userContext);
+
+        loading = false;
+        StateHasChanged();
+    }
+    //TODO: Move this a better place
+    private async Task SetRelationship()
+    {
+        if (UserState.CurrentUser != null && _userContext != UserState.CurrentUser)
+        {
+            loading = true;
+            StateHasChanged();
+
+            ActionType ActionType = await RelationshipService.SetRelationshipAsync(UserState.CurrentUser, _userContext);
+
+            icon = await RelationshipService.GetRelationIcon(UserState.CurrentUser, _userContext);
+            loading = false;
+            switch (ActionType)
+            {
+                case ActionType.Add:
+                    _userContext.Friends.Add(UserState.CurrentUser);
+                    await AddFriend.InvokeAsync(UserState.CurrentUser);
+                    break;
+                case ActionType.Remove:
+                    _userContext.Friends.Remove(UserState.CurrentUser);
+                    await RemoveFriend.InvokeAsync(UserState.CurrentUser);
+                    break;
+            }
+            StateHasChanged();
+        }
+    }
 }
+

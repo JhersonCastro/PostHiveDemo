@@ -1,6 +1,7 @@
 ﻿using DbContext;
 using DbContext.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace PostHive.Services
 {
@@ -32,18 +33,13 @@ namespace PostHive.Services
         /// <returns>A task that represents the asynchronous operation. The task result contains the user or null.</returns>
         public async Task<User?> RetrievedUser(User? user)
         {
-            // If the user is already provided, return it directly.
             if (user != null)
                 return user;
 
-            // Retrieve the current session value from local storage.
             string t = await localStorageService.GetItemAsync("CurrentSession");
 
-            // Create a database context for the query.
-            await using var context = await contextFactory.CreateDbContextAsync();
 
-            // Get the user associated with the retrieved cookie.
-            var tempUser = await GetUserByCookie(t, context);
+            var tempUser = await GetUserByCookie(t);
             return tempUser;
         }
 
@@ -96,16 +92,18 @@ namespace PostHive.Services
         /// <param name="cookie">The session cookie to search for.</param>
         /// <param name="context">The database context to use for querying.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the user or null if no user is found.</returns>
-        private static async Task<User?> GetUserByCookie(string cookie, DatabaseContext context)
+        private async Task<User?> GetUserByCookie(string cookie)
         {
             // Find the cookie in the database.
+            await using var context = await contextFactory.CreateDbContextAsync();
             var user = await context.Cookies.FirstOrDefaultAsync(p => p.CookieCurrentSession == cookie);
             if (user != null)
             {
                 //TODO: Friends instance
 
                 // If the cookie is found, retrieve the associated user, including related posts, files, comments, and friends.
-                return await context.Users.AsNoTracking()
+
+                var getUser = await context.Users.AsNoTracking()
                     .Include(u => u.Posts)
                     .ThenInclude(p => p.Files)
                     .Include(u => u.Posts)
@@ -113,8 +111,38 @@ namespace PostHive.Services
                     .ThenInclude(c => c.User)
                     //.Include(f => f)
                     .FirstOrDefaultAsync(u => u.UserId == user.UserId);
+                if (getUser != null)
+                {
+                    getUser.Friends = await GetFriendsAsync(getUser.UserId);
+                    return getUser;
+                }
             }
             return null;
+        }
+        private async Task<List<User>> GetFriendsAsync(int userId)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            var user = await context.Users
+                .Include(u => u.RelationshipsInitiated)
+                .ThenInclude(r => r.RelatedUser)
+                .Include(u => u.RelationshipsReceived)
+                .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user != null)
+            {
+                var friends = user.RelationshipsInitiated
+                    .Where(r => r.Status == RelationshipStatus.accept)
+                    .Select(r => r.RelatedUser) 
+                    .Union(user.RelationshipsReceived
+                        .Where(r => r.Status == RelationshipStatus.accept)
+                        .Select(r => r.User)) 
+                    .ToList();
+
+                return friends;
+            }
+
+            return new List<User>(); 
         }
     }
 }

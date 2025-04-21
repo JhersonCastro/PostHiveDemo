@@ -26,7 +26,7 @@
     <PostHive.Components.Pages.Tags.Utils.UserHeader 
     _userContext="UserState.CurrentUser" 
     uploadFiles="BtnAvatarHandlerAsync"/>
-    
+
 
 
 
@@ -69,11 +69,32 @@
             </section>
         </div>
     </div>
-    @foreach (var post in UserState.CurrentUser.Posts.OrderByDescending(p=> p.CreatedDate))
-    {
-        <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser" OnDeleteClick="DeleteId"></PostHive.Components.Pages.Tags.Posts.Post>
-    }
 
+
+
+    <MudGrid Class="mud-width-full" Justify="Justify.Center">
+        @{
+            var smSize = 10; 
+            if (UserState.CurrentUser.Friends.Count != 0)
+            {
+                <MudItem xs="12" sm="5"> 
+                    <MudPaper>
+                        <PostHive.Components.Pages.Tags.Utils.FriendSection user="UserState.CurrentUser"></PostHive.Components.Pages.Tags.Utils.FriendSection>
+                    </MudPaper>
+                </MudItem>
+                smSize = 7;
+            }
+            <MudItem xs="12" sm="@smSize"> 
+                <MudPaper>
+                    @foreach (var post in UserState.CurrentUser.Posts.OrderByDescending(p=> p.CreatedDate))
+                    {
+                        <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser" OnDeleteClick="DeleteId"></PostHive.Components.Pages.Tags.Posts.Post>
+                    }
+                </MudPaper>
+            </MudItem>
+        }
+        
+    </MudGrid>
 
 }
 <style>

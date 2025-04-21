@@ -1,5 +1,7 @@
 ﻿@using PostHive.Services
 @inject ThemeState ThemeState
-<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-    <Circle Center="true" Color="@(ThemeState.IsDark ? "White" : "Black")" />
-</div>
+<MudPaper Class="mud-width-full mud-height-full" Style="position: fixed; top: 0; left: 0; z-index: 9999; ">
+    <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+        <Circle Center="true" Color="@(ThemeState.IsDark ? "White" : "Black")" />
+    </div>
+</MudPaper>

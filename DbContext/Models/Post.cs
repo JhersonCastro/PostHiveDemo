@@ -19,7 +19,7 @@ namespace DbContext.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int PostId { get; init; }
+        public int PostId { get; set; }
 
         [Required]
         public int UserId { get; init; }

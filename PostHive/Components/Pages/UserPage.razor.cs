@@ -13,11 +13,12 @@ public partial class UserPage
 
     private User? _userContext;
     private string _previousId = null!;
-    public async Task RefreshFriends(User user, ActionType actionType)
+    public Task RefreshFriends(User user, ActionType actionType)
     {
         if(actionType == ActionType.Remove)
-            _userContext.Friends.Remove(user);
+            _userContext?.Friends.Remove(user);
         StateHasChanged();
+        return Task.CompletedTask;
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -48,6 +49,11 @@ public partial class UserPage
                 Posts = await PostService.GetPostsAsync(user, UserState.CurrentUser),
                 Friends = await UserService.GetFriendsAsync(user.UserId)
             };
+            if(UserState.CurrentUser != null)
+            {
+                var relationship = await RelationshipService.GetRelationship(UserState.CurrentUser, user);
+                if (relationship is { Status: RelationshipStatus.blocked }) NavigationManager.NavigateTo("/");
+            }
         }
         catch (Exception ex)
         {

@@ -1,0 +1,150 @@
+﻿@page "/FriendSectionDemo"
+<MudLink Href="@urlPath">Friends @Friends.Count</MudLink>
+<MudGrid Justify="Justify.Center" Spacing="4">
+    @if (Friends != null && Friends.Any())
+    {
+        var topFriends = Friends.Take(9);
+        foreach (var friend in topFriends)
+        {
+            var imagePath = $"Doctypes/Avatars/{friend.Avatar}";
+            var linkPath = $"{Const.url}/User/{friend.UserId}";
+
+            <MudItem xs="6" sm = "6" md ="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Style="object-fit:contain;" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            
+            @*Temp*@
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="4">
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
+                    <MudCard Class="mud-card-small">
+                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
+                        <MudCardContent>
+                            <MudLink Href="@linkPath">
+                                <MudText Typo="Typo.h3">@friend.Name</MudText>
+                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
+                            </MudLink>
+                        </MudCardContent>
+                    </MudCard>
+                </MudPaper>
+            </MudItem>
+            
+        }
+    }
+
+</MudGrid>
+
+
+
+@code {
+    [Parameter] public required User user { get; set; }
+    private List<User>? Friends { get; set; } = [];
+    private string urlPath;
+    protected override  Task OnInitializedAsync()
+    {
+        Friends = user.Friends;
+        urlPath = $"/Friends?userid={user.UserId}";
+        return base.OnInitializedAsync();
+    }
+
+}

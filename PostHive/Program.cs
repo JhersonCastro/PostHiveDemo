@@ -36,6 +36,7 @@ builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<CookiesService>();
 
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<RelationshipService>();
 builder.Services.AddScoped<PostService>();
 
 builder.Services.AddScoped<UserState>();

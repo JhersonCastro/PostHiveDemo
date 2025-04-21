@@ -27,7 +27,7 @@ namespace DbContext.Models
 
         [Required]
         [StringLength(25)]
-        public RelationshipStatus Status { get; init; } = RelationshipStatus.request;
+        public RelationshipStatus Status { get; set; } = RelationshipStatus.request;
 
         [Required]
         public DateTime DateFriendship { get; init; } = DateTime.UtcNow;

@@ -1,7 +1,6 @@
 ﻿using DbContext.Models;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace DbContext
 {
     public class DatabaseContext(DbContextOptions<DatabaseContext> options)
@@ -17,6 +16,7 @@ namespace DbContext
         public DbSet<Report> Reports { get; init; }
         public DbSet<ReportReasons> ReportReasons { get; init; }
         public DbSet<Ban> Ban { get; init; }
+        public DbSet<Notifications> Notifications { get; init; }
 
 
 

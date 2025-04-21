@@ -5,17 +5,43 @@
 @inject PostService PostService
 @inject NavigationManager NavigationManager
 @inject CookiesService CookiesService
+@inject RelationshipService RelationshipService
 
 @if (_userContext != null)
 {
     <PageTitle>@_userContext.Name</PageTitle>
 
-        <PostHive.Components.Pages.Tags.Utils.UserHeader _userContext="@_userContext"></PostHive.Components.Pages.Tags.Utils.UserHeader>
+        <PostHive.Components.Pages.Tags.Utils.UserHeader 
+                            _userContext="@_userContext" 
+                            RemoveFriend="(User user) => RefreshFriends(user, ActionType.Remove)"
+                            AddFriend="(User user) => RefreshFriends(user, ActionType.Add)">
+        </PostHive.Components.Pages.Tags.Utils.UserHeader>
 
-        @foreach (var post in _userContext.Posts.OrderByDescending(p => p.CreatedDate))
-        {
-            <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser"></PostHive.Components.Pages.Tags.Posts.Post>
-        }
+
+        <MudGrid Class="mud-width-full" Justify="Justify.Center">
+            @{
+                var smSize = 10;
+                if (_userContext.Friends.Count != 0)
+                {
+                    <MudItem xs="12" sm="5"> 
+                        <MudPaper>
+                        <PostHive.Components.Pages.Tags.Utils.FriendSection user="_userContext"></PostHive.Components.Pages.Tags.Utils.FriendSection>
+                        </MudPaper>
+                    </MudItem>
+                    smSize = 7;
+                }
+                <MudItem xs="12" sm="@smSize"> 
+                    <MudPaper>
+                    @foreach (var post in _userContext.Posts.OrderByDescending(p => p.CreatedDate))
+                        {
+                            <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser"></PostHive.Components.Pages.Tags.Posts.Post>
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+        
+        </MudGrid>
+
 }
 else
 {

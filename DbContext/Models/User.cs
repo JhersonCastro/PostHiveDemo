@@ -28,13 +28,15 @@ namespace DbContext.Models
         [Required]
         public string Avatar { get; set; } = "default.png";
 
-        public ICollection<Post> Posts { get; init; }
+        public ICollection<Post?> Posts { get; init; }
 
         // Relaciones donde este usuario es el iniciador
         public ICollection<Relationship> RelationshipsInitiated { get; init; }
 
         // Relaciones donde este usuario es el receptor
         public ICollection<Relationship> RelationshipsReceived { get; init; }
+        [NotMapped]
+        public List<User> Friends { get; set; }
     }
 
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.

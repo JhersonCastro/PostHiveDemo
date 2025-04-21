@@ -1,5 +1,9 @@
 ﻿using DbContext.Models;
 using Microsoft.AspNetCore.Components;
+using PostHive.Services;
+using static MudBlazor.CategoryTypes;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace PostHive.Components.Pages;
 
@@ -9,7 +13,12 @@ public partial class UserPage
 
     private User? _userContext;
     private string _previousId = null!;
-
+    public async Task RefreshFriends(User user, ActionType actionType)
+    {
+        if(actionType == ActionType.Remove)
+            _userContext.Friends.Remove(user);
+        StateHasChanged();
+    }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_previousId != Id)
@@ -19,7 +28,7 @@ public partial class UserPage
             await LoadUserContextAsync();
         }
     }
-
+    
     private async Task LoadUserContextAsync()
     {
         try
@@ -36,7 +45,8 @@ public partial class UserPage
                 Name = user.Name,
                 NickName = user.NickName,
                 Avatar = user.Avatar,
-                Posts = await PostService.GetPostsAsync(user, UserState.CurrentUser)
+                Posts = await PostService.GetPostsAsync(user, UserState.CurrentUser),
+                Friends = await UserService.GetFriendsAsync(user.UserId)
             };
         }
         catch (Exception ex)

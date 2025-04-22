@@ -5,121 +5,127 @@
 @inject IDialogService DialogService
 @inject CookiesService CookiesService
 
-<div class="row justify-content-center">
-    <MudCard Class="col-10 col-sm-10 col-md-10 col-lg-10 mb-5">
-        <MudCardHeader >
-            <CardHeaderAvatar>
-                <MudAvatar Size="Size.Large">
-                    <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{CurrentPost.User.Avatar}")" Alt="Avatar"
-                    Style="border-radius:50%; max-height:150px"></MudImage>
-                </MudAvatar>
-            </CardHeaderAvatar>
-            <CardHeaderContent>
-                <MudLink Href="@($"{Const.url}/User/{CurrentPost.User.UserId}")">
-                    <MudText Typo="Typo.body1">@CurrentPost.User.Name</MudText>
-                    <MudText Typo="Typo.body2">@CurrentPost.User.NickName</MudText>
-                </MudLink>
-            </CardHeaderContent>
-            <CardHeaderActions>
-                <MudPaper Elevation="0">
+<MudGrid Justify="Justify.Center">
+    <!-- Sección del Post -->
+    <MudItem xs="11">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Size="Size.Large">
+                        <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{CurrentPost.User.Avatar}")" Alt="Avatar"
+                                  Style="border-radius:50%; max-height:150px"></MudImage>
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudLink Href="@($"{Const.url}/User/{CurrentPost.User.UserId}")">
+                        <MudText Typo="Typo.body1">@CurrentPost.User.Name</MudText>
+                        <MudText Typo="Typo.body2">@CurrentPost.User.NickName</MudText>
+                    </MudLink>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudPaper Elevation="0">
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                            <MudTooltip Text="@CurrentPost.CreatedDate.ToLocalTime().ToString(CultureInfo.InvariantCulture)">
+                                <MudText Typo="Typo.h5">@CurrentPost.CreatedDate.ToLocalTime().ToShortDateString()</MudText>
+                            </MudTooltip>
 
-                    <MudStack 
-                    Row="true"
-                    AlignItems="AlignItems.Center">
-                        <MudTooltip Text="@CurrentPost.CreatedDate.ToLocalTime().ToString(CultureInfo.InvariantCulture)">
-                            <MudText Typo="Typo.h5">@CurrentPost.CreatedDate.ToLocalTime().ToShortDateString()</MudText>
-                        </MudTooltip>
-
-                        @{
-                            var icon = CurrentPost.Privacy switch
-                            {
-                                PostPrivacy.p_public => @Icons.Material.Outlined.Public,
-                                PostPrivacy.p_private => @Icons.Material.Filled.Lock,
-                                PostPrivacy.p_only_friends => @Icons.Material.Filled.PeopleAlt,
-                                PostPrivacy.p_unlisted => @Icons.Material.Filled.CloudOff,
-                                _ => ""
-                            };
-                        }
-                        <MudIcon Icon="@icon"></MudIcon>
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"  Dense="true">
-                            <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center">
-                                @if (OnDeleteClick.HasDelegate)
+                            @{
+                                var icon = CurrentPost.Privacy switch
                                 {
+                                    PostPrivacy.p_public => @Icons.Material.Outlined.Public,
+                                    PostPrivacy.p_private => @Icons.Material.Filled.Lock,
+                                    PostPrivacy.p_only_friends => @Icons.Material.Filled.PeopleAlt,
+                                    PostPrivacy.p_unlisted => @Icons.Material.Filled.CloudOff,
+                                    _ => ""
+                                };
+                            }
+                            <MudIcon Icon="@icon"></MudIcon>
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert" Dense="true">
+                                <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                                    @if (OnDeleteClick.HasDelegate)
+                                    {
+                                        <MudMenuItem>
+                                            <MudButton Variant="Variant.Filled"
+                                                       OnClick="() => DeleteId(CurrentPost)"
+                                                       Color="Color.Error"
+                                                       StartIcon="@Icons.Material.Outlined.Delete">
+                                                Delete Post
+                                            </MudButton>
+                                        </MudMenuItem>
+                                    }
+                                    @*//TODO: IMPLEMENT A EDIT DELEGATE*@
+                                    @if (true)
+                                    {
+                                        <MudMenuItem>
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="Color.Success"
+                                                       StartIcon="@Icons.Material.Outlined.Edit">
+                                                Edit Post
+                                            </MudButton>
+                                        </MudMenuItem>
+                                    }
+
                                     <MudMenuItem>
-                                        <MudButton 
-                                        Variant="Variant.Filled"
-                                        OnClick="() => DeleteId(CurrentPost)" 
-                                        Color="Color.Error" 
-                                        StartIcon="@Icons.Material.Outlined.Delete">
-                                            Delete Post
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   OnClick="OpenDialogAsync"
+                                                   StartIcon="@Icons.Material.Filled.Share">
+                                            Share Post
                                         </MudButton>
                                     </MudMenuItem>
-                                }
-                                @*//TODO: IMPLEMENT A EDIT DELEGATE*@
-                                @if (true)
-                                {
-                                    <MudMenuItem>
-                                        <MudButton 
-                                            Variant="Variant.Filled"
-                                            Color="Color.Success" 
-                                            StartIcon="@Icons.Material.Outlined.Edit">
-                                            Edit Post
-                                        </MudButton>
-                                    </MudMenuItem>
-                                }
+                                    @if (CurrentUser != null)
+                                    {
+                                        <MudItem>
 
-                                <MudMenuItem>
-                                    <MudButton 
-                                        Variant="Variant.Filled" 
-                                        Color="Color.Primary" 
-                                        OnClick="OpenDialogAsync"
-                                        StartIcon="@Icons.Material.Filled.Share">
-                                        Share Post
-                                    </MudButton>
-                                </MudMenuItem>
-                                @if(CurrentUser != null)
-                                {
-                                    <MudItem>
-                               
-                                        <MudButton 
-                                            Variant="Variant.Filled" 
-                                            Color="Color.Error" 
-                                            StartIcon="@Icons.Material.Filled.Report"
-                                        >
-                                            Report Post
-                                        </MudButton>
-                                    </MudItem>
-                                }
-                            </MudStack>
-                        </MudMenu>
-                    
-                    </MudStack>
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="Color.Error"
+                                                       StartIcon="@Icons.Material.Filled.Report">
+                                                Report Post
+                                            </MudButton>
+                                        </MudItem>
+                                    }
+                                </MudStack>
+                            </MudMenu>
+                        </MudStack>
                     </MudPaper>
-            </CardHeaderActions>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.h4">@CurrentPost.Body</MudText>
-            <section class="row g-3 p-3 justify-content-center">
-                @foreach (var media in CurrentPost.Files)
-                {
-                    <div class="col-sm-12 @(CurrentPost.Files.Count == 1 ? "col-md-10 col-lg-8": "col-md-6 col-lg-4") mb-2">
-                        @if (media.FileType.Split('/')[0] == "video")
-                        {
-                            <video class='same-size rounded-5' controls>
-                                <source src='@Const.url/Doctypes/@media.Uri' type="@media.FileType">
-                            </video>
-                        }
-                        else
-                        {
-                            <img loading='lazy' class='same-size rounded-5' src='@Const.url/Doctypes/@media.Uri' alt='Image' />
-                        }
-                    </div>
-                }
-            </section>
+                </CardHeaderActions>
+            </MudCardHeader>
 
-        </MudCardContent>
-        <MudCardContent>
-            <Comment post="CurrentPost" CurrentUser="CurrentUser" />
-        </MudCardContent>
-    </MudCard>
-</div>
+            <MudCardContent>
+                <MudText Typo="Typo.h4">@CurrentPost.Body</MudText>
+                <section class="row g-3 p-3 justify-content-center">
+                    @foreach (var media in CurrentPost.Files)
+                    {
+                        <div class="col-sm-12 @(CurrentPost.Files.Count == 1 ? "col-md-10 col-lg-8": "col-md-6 col-lg-4") mb-2">
+                            @if (media.FileType.Split('/')[0] == "video")
+                            {
+                                <video class='same-size rounded-5' controls>
+                                    <source src='@Const.url/Doctypes/@media.Uri' type="@media.FileType">
+                                </video>
+                            }
+                            else
+                            {
+                                <img loading='lazy' class='same-size rounded-5' src='@Const.url/Doctypes/@media.Uri' alt='Image' />
+                            }
+                        </div>
+                    }
+                </section>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Sección de Comentarios -->
+    
+    <MudItem xs="10">
+        <MudCard>
+            <MudCardHeader>
+                <MudText>
+                    Comment Section:
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <Comment post="CurrentPost" CurrentUser="CurrentUser" />
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>

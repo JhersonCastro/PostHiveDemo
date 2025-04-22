@@ -64,23 +64,7 @@ public partial class Profile
         }
     }
 
-    private async Task DeleteId(Post? post)
-    {
-        if (post == null)
-            return;
-        try
-        {
-            await PostService.DeletePostAsync(post.PostId);
-            UserState.CurrentUser?.Posts.Remove(post);
-            _error = string.Empty;
-            Snackbar.Add("Post Deleted", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            UserState.CurrentUser?.Posts.Remove(post);
-            _error = ex.Message;
-        }
-    }
+   
 
     private async Task BtnAvatarHandlerAsync(IBrowserFile e)
     {
@@ -113,11 +97,10 @@ public partial class Profile
     private readonly string[] _allowedExtensions = ["jpg", "mp4", "png", "jpeg"];
     private readonly Dictionary<Files, double> _fileProgresses = new Dictionary<Files, double>();
 
-    private async Task BtnUploadPostFiles(InputFileChangeEventArgs e)
+    private async Task BtnUploadPostFiles(IReadOnlyList<IBrowserFile> files)
     {
-        var browserFiles = e.GetMultipleFiles();
-        _currentUploadFiles += browserFiles.Count();
-        foreach (var file in browserFiles)
+        _currentUploadFiles += files.Count();
+        foreach (var file in files)
         {
             try
             {

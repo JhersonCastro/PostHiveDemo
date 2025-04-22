@@ -1,0 +1,76 @@
+﻿@using PostHive.Services
+@inject ISnackbar Snackbar
+@inject PostService PostService
+<MudGrid Class="mud-width-full" Justify="Justify.Center">
+    @{
+        var mdSize = 10;
+        if (UserContext.Friends.Count != 0)
+        {
+            <MudItem xs="12" sm="12" md="5"> 
+                <MudPaper>
+                    <PostHive.Components.Pages.Tags.Utils.FriendSection user="UserContext">
+                    </PostHive.Components.Pages.Tags.Utils.FriendSection>
+                </MudPaper>
+            </MudItem>
+            mdSize = 6;
+        }
+        <MudItem xs="12" sm="12" md="@mdSize"> 
+            <MudPaper>
+                @if (flagSameUser)
+                {
+                    @foreach (var post in UserContext.Posts.OrderByDescending(p => p.CreatedDate))
+                    {
+                        <PostHive.Components.Pages.Tags.Posts.Post
+                        CurrentPost="@post" CurrentUser="CurrentUser"
+                        OnDeleteClick="DeleteId">
+                        </PostHive.Components.Pages.Tags.Posts.Post>
+                        <br />
+                        <hr />
+                        <br />
+                    }
+                }
+                else
+                {
+                    @foreach (var post in UserContext.Posts.OrderByDescending(p => p.CreatedDate))
+                    {
+                        <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="CurrentUser">
+                        </PostHive.Components.Pages.Tags.Posts.Post>
+                        <br />
+                        <hr />
+                        <br />
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    }
+
+</MudGrid>
+@code {
+    [Parameter] public required User? UserContext { get; set; }
+    [Parameter] public required User? CurrentUser { get; set; }
+
+    private bool flagSameUser = false;
+    protected override Task OnInitializedAsync()
+    {
+        if(UserContext==CurrentUser)
+            flagSameUser = true;
+        return base.OnInitializedAsync();
+    }
+    
+    //TODO: WARNING FIX THAT 
+    private async Task DeleteId(DbContext.Models.Post post)
+    {
+        if (post == null && !flagSameUser)
+            return;
+        try
+        {
+            await PostService.DeletePostAsync(post.PostId);
+            UserContext?.Posts.Remove(post);
+            Snackbar.Add("Post Deleted", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            UserContext?.Posts.Remove(post);
+        }
+    }
+}

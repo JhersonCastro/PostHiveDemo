@@ -42,6 +42,8 @@
                             <MudIcon Icon="@icon"></MudIcon>
                             <MudMenu Icon="@Icons.Material.Filled.MoreVert" Dense="true">
                                 <MudStack Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                                    @*//TODO: IMPLEMENT A EDIT DELEGATE*@
+
                                     @if (OnDeleteClick.HasDelegate)
                                     {
                                         <MudMenuItem>
@@ -52,10 +54,6 @@
                                                 Delete Post
                                             </MudButton>
                                         </MudMenuItem>
-                                    }
-                                    @*//TODO: IMPLEMENT A EDIT DELEGATE*@
-                                    @if (true)
-                                    {
                                         <MudMenuItem>
                                             <MudButton Variant="Variant.Filled"
                                                        Color="Color.Success"

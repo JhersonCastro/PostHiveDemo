@@ -22,81 +22,84 @@
 }else
 {
     <PageTitle>@UserState.CurrentUser.Name</PageTitle>
-
+        
     <PostHive.Components.Pages.Tags.Utils.UserHeader 
     _userContext="UserState.CurrentUser" 
-    uploadFiles="BtnAvatarHandlerAsync"/>
+    uploadFiles="BtnAvatarHandlerAsync"
+    />
 
 
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="my-5">
+        <MudGrid>
+            <MudItem xs="12">
+                <MudPaper Elevation="4" Class="p-4">
+                    <!-- Formulario de edición -->
+                    <EditForm EditContext="_editPostContext" OnValidSubmit="HandlerPost">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
+                        <!-- Selección de privacidad usando MudSelect -->
+                        <MudSelect T="PostPrivacy" Label="Privacy" @bind-Value="_postModel!.Privacy" Margin="Margin.Normal">
+                            @foreach (var value in Enum.GetValues<PostPrivacy>())
+                            {
+                                <MudSelectItem Value="@value">@value</MudSelectItem>
+                            }
+                        </MudSelect>
 
-    <div class="d-flex justify-content-center my-5">
-        <div class="col-12 col-md-10 col-lg-8 p-4">
-            <EditForm EditContext="_editPostContext" FormName="CurrentPostContent" OnValidSubmit="HandlerPost">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-                <MudSelect @bind-Value="@_postModel!.Privacy">
-                    @foreach (var value in Enum.GetValues<PostPrivacy>())
-                    {
-                        <MudSelectItem Value="@value">@value</MudSelectItem>
-                    }
-                </MudSelect>
-                <br />
-                <MudTextField Lines="3" Placeholder="Write something..." Label="Body" @bind-Value="@_postModel.Body" />
-                <br />
-                <div class="row justify-content-end">
-                    <label for="inputPostFile" class="col-auto same-sizebtn"> 
-                        <MudIcon Icon="@Icons.Material.Rounded.FileUpload" class="IconHover same-sizebtn"></MudIcon>
-                        <InputFile OnChange="BtnUploadPostFiles" multiple accept=".png,.jpg,.jpeg,.mp4" id="inputPostFile" style="display:none"/>
-                    </label>
+                        <!-- Campo de texto para el contenido -->
+                        <MudTextField T="string" Lines="3" Placeholder="Write something..." Label="Body" @bind-Value="_postModel.Body" Margin="Margin.Normal" />
 
-                    <MudButton Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Publish" ButtonType="ButtonType.Submit" class="col-auto same-sizebtn">Post!</MudButton>
-                </div>
-            </EditForm>
-            <section class='row g-3 p-3 justify-content-center'>
-                @if (_currentUploadFiles > 0)
-                {
-                    <p>Please don't close this page, Uploading @_currentUploadFiles files</p>
-                }
-                @foreach (var file in _fileProgresses.Keys)
-                {
-                    <div class="progress mt-2"> 
-                        <div class="progress-bar" role="progressbar" style="width: @(_fileProgresses[file])%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                            @($"{_fileProgresses[file]:0.00}%")
-                        </div> 
-                    </div>
-                }
-            </section>
-        </div>
-    </div>
+                        <!-- Acciones: carga de archivos y botón de envío -->
+                        <MudGrid Justify="Justify.FlexEnd" AlignItems="Center" Class="mt-2">
+                            <!-- Carga de archivos -->
+                            <MudItem>
+                                <MudFileUpload 
+                                    T="IReadOnlyList<IBrowserFile>" 
+                                        FilesChanged="BtnUploadPostFiles" 
+                                        Accept=".png,.jpg,.jpeg,.mp4" 
+                                        MaximumFileCount="@Const.MaxFileCount">
+                                    <ActivatorContent>
+                                        <MudIcon Icon="@Icons.Material.Rounded.FileUpload" Class="mud-icon-size-large IconHover" />
+                                    </ActivatorContent>
+                                </MudFileUpload>
+                            </MudItem>
 
+                            <!-- Botón de submit dentro de un tooltip -->
+                            <MudItem>
+                                <MudTooltip Text="Post">
+                                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Outlined.Publish" ButtonType="ButtonType.Submit" />
+                                </MudTooltip>
+                            </MudItem>
+                        </MudGrid>
+                    </EditForm>
 
-
-    <MudGrid Class="mud-width-full" Justify="Justify.Center">
-        @{
-            var smSize = 10; 
-            if (UserState.CurrentUser.Friends.Count != 0)
-            {
-                <MudItem xs="12" sm="5"> 
-                    <MudPaper>
-                        <PostHive.Components.Pages.Tags.Utils.FriendSection user="UserState.CurrentUser"></PostHive.Components.Pages.Tags.Utils.FriendSection>
+                    <!-- Sección de progreso de subida -->
+                    <MudPaper Class="mt-4 p-3" Elevation="1">
+                        @if (_currentUploadFiles > 0)
+                        {
+                            <MudText Typo="Typo.subtitle2">
+                                Please don't close this page, Uploading @_currentUploadFiles file(s)
+                            </MudText>
+                        }
+                        @foreach (var file in _fileProgresses.Keys)
+                        {
+                            <MudProgressLinear Value="@_fileProgresses[file]" BufferValue="100" Color="Color.Primary" Class="mt-2" />
+                            <!-- También se muestra el porcentaje con formato -->
+                            <MudText Typo="Typo.caption">@($"{_fileProgresses[file]:0.00}%")</MudText>
+                        }
                     </MudPaper>
-                </MudItem>
-                smSize = 7;
-            }
-            <MudItem xs="12" sm="@smSize"> 
-                <MudPaper>
-                    @foreach (var post in UserState.CurrentUser.Posts.OrderByDescending(p=> p.CreatedDate))
-                    {
-                        <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="UserState.CurrentUser" OnDeleteClick="DeleteId"></PostHive.Components.Pages.Tags.Posts.Post>
-                    }
                 </MudPaper>
             </MudItem>
-        }
-        
-    </MudGrid>
+        </MudGrid>
+    </MudContainer>
+    <div style="margin-top: 3rem;"></div>
+    <PostHive.Components.Pages.Tags.Posts.PostSection 
+        UserContext="UserState.CurrentUser"
+        CurrentUser="UserState.CurrentUser"/>
+
 
 }
+
 <style>
     .IconHover:hover{
     cursor: pointer;

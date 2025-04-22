@@ -1,0 +1,55 @@
+﻿@page "/friends"
+@using PostHive.Services
+@inject UserService UserService
+@inject CookiesService CookiesService
+@inject NavigationManager NavigationManager
+@if (_userContext != null && !loading)
+{
+    @* <UserHeader _userContext="_userContext">
+
+    </UserHeader> *@
+    <MudGrid Justify="Justify.Center"> 
+        <MudItem xs="10">
+            <FriendSection user="_userContext"> </FriendSection>
+        </MudItem>
+    </MudGrid>
+}
+else
+{
+    <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
+}
+@code {
+    //TODO: FIX THE FRIEND PAGE 
+    [SupplyParameterFromQuery] public string Id { get; set; } = string.Empty;
+    private bool loading;
+    private User? _userContext { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+            if (firstRender)
+            {
+                Console.WriteLine("Loading user context");
+                await LoadUserContextAsync();
+            }
+    }
+    private async Task LoadUserContextAsync()
+    {
+        try
+        {
+            loading = true;
+            StateHasChanged();
+            _userContext = await UserService.GetUserById(int.Parse(Id));
+
+            if (_userContext == null)
+                throw new Exception("User not found");
+            _userContext.Friends = await UserService.GetFriendsAsync(_userContext.UserId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            NavigationManager.NavigateTo("/");
+        }
+        loading = false;
+        
+        StateHasChanged();
+    }
+}

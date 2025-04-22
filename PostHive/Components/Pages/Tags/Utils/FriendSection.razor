@@ -1,6 +1,6 @@
 ﻿@page "/FriendSectionDemo"
 <MudLink Href="@urlPath">Friends @Friends.Count</MudLink>
-<MudGrid Justify="Justify.Center" Spacing="4">
+<MudGrid Justify="Justify.FlexStart" Spacing="4">
     @if (Friends != null && Friends.Any())
     {
         var topFriends = Friends.Take(9);
@@ -23,111 +23,7 @@
                 </MudPaper>
             </MudItem>
             
-            @*Temp*@
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="6" sm="6" md="4">
-                <MudPaper Class="d-flex align-center justify-center mud-width-full py-2">
-                    <MudCard Class="mud-card-small">
-                        <MudCardMedia Image="@imagePath" Height="200"></MudCardMedia>
-                        <MudCardContent>
-                            <MudLink Href="@linkPath">
-                                <MudText Typo="Typo.h3">@friend.Name</MudText>
-                                <MudText Typo="Typo.h5">@@@friend.NickName</MudText>
-                            </MudLink>
-                        </MudCardContent>
-                    </MudCard>
-                </MudPaper>
-            </MudItem>
+            
             
         }
     }
@@ -143,7 +39,7 @@
     protected override  Task OnInitializedAsync()
     {
         Friends = user.Friends;
-        urlPath = $"/Friends?userid={user.UserId}";
+        urlPath = $"/friends?id={user.UserId}";
         return base.OnInitializedAsync();
     }
 

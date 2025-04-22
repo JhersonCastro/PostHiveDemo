@@ -15,6 +15,7 @@ else
                     <MudImage ObjectPosition="ObjectPosition.Center" Src="@($"{Const.url}/Doctypes/Avatars/{_userContext.Avatar}")" Style="max-height:200px;"></MudImage>
                     @if (uploadFiles.HasDelegate)
                     {
+
                         <MudStack Row="true"
                         AlignItems="AlignItems.Center"
                         Spacing="1"
@@ -43,12 +44,27 @@ else
                     @*//TODO : Implement a relationship achievement*@
                     @if (UserState.CurrentUser != null && _userContext != UserState.CurrentUser)
                     {
-                        <MudStack Row="true"
+                        Color color = icon switch
+                        {
+                            Icons.Material.Filled.Cancel => Color.Error,
+                            Icons.Material.Filled.PersonRemove => Color.Error,
+                            Icons.Material.Filled.PersonAdd => Color.Primary,
+                        };
+                        <MudStack Row="false"
                         AlignItems="AlignItems.Center"
-                        Spacing="1"
-                        Class="position-absolute bottom-0 end-0">
-                            <MudButton OnClick="(async() => await SetRelationship())" StartIcon="@icon" IconSize="Size.Large" Color="Color.Primary">
-                            </MudButton>
+                        Spacing="2"
+                        Class="position-absolute start-0 ms-5 mt-3 top-0">
+                            <MudFab 
+                                StartIcon="@Icons.Material.Filled.Block"
+                            >
+                            </MudFab>
+                            <MudFab 
+                                OnClick="(async() => await SetRelationship())" 
+                                StartIcon="@icon" 
+                                IconSize="Size.Large" 
+                                Color="@color">
+
+                            </MudFab>
                         </MudStack>
                     }
 
@@ -98,11 +114,9 @@ else
             switch (ActionType)
             {
                 case ActionType.Add:
-                    _userContext.Friends.Add(UserState.CurrentUser);
                     await AddFriend.InvokeAsync(UserState.CurrentUser);
                     break;
                 case ActionType.Remove:
-                    _userContext.Friends.Remove(UserState.CurrentUser);
                     await RemoveFriend.InvokeAsync(UserState.CurrentUser);
                     break;
             }

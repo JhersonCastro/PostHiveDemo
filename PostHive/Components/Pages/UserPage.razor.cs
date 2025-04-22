@@ -10,13 +10,27 @@ namespace PostHive.Components.Pages;
 public partial class UserPage
 {
     [Parameter] public string Id { get; set; } = string.Empty;
-
+    private bool loading = true;
     private User? _userContext;
     private string _previousId = null!;
-    public Task RefreshFriends(User user, ActionType actionType)
+    public Task RefreshFriends(User? user, ActionType actionType)
     {
-        if(actionType == ActionType.Remove)
-            _userContext?.Friends.Remove(user);
+        if(_userContext == null || user == null)
+            return Task.CompletedTask;
+        switch (actionType)
+        {
+            case ActionType.Remove:
+                user.Friends.Remove(_userContext);
+                _userContext.Friends.Remove(user);
+                break;
+            case ActionType.Add:
+                user.Friends.Add(_userContext);
+                _userContext.Friends.Add(user);
+                break;
+            case ActionType.Block:
+                NavigationManager.NavigateTo("/");
+                break;
+        }
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -34,6 +48,8 @@ public partial class UserPage
     {
         try
         {
+            loading = true;
+            StateHasChanged();
             UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
             var user = await UserService.GetUserById(int.Parse(Id));
 
@@ -60,7 +76,7 @@ public partial class UserPage
             Console.WriteLine($"Error: {ex.Message}");
             NavigationManager.NavigateTo("/");
         }
-
+        loading = false;
         StateHasChanged();
     }
 }

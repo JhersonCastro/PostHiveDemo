@@ -69,4 +69,8 @@ app.MapRazorComponents<App>()
 app.MapHub<CommentHub>("/CommentHub");
 app.MapHub<ChatHub>("/ChatHub");
 
+//Middleware
+app.UseMiddleware<PostHive.Middleware.NotFoundMiddleware>();
+
+
 app.Run();

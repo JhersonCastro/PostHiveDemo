@@ -1,8 +1,10 @@
 ﻿@page "/Post/{Id}"
+@using Microsoft.AspNetCore.Mvc
 @using Services
 @inject PostService PostService
 @inject CookiesService CookieService
 @inject UserState UserState
+@inject NavigationManager NavigationManager
 
 
 @if (string.IsNullOrEmpty(Error) && CurrentPost != null)
@@ -38,7 +40,9 @@ else{
             CurrentPost = await PostService.GetPostByIdAsync(CurrentPost!.User, UserState.CurrentUser, idPost, true);
 
             if(CurrentPost == null)
-                throw new Exception("Post not found");
+            {
+                NavigationManager.NavigateTo("/404");
+            }
         }
         catch (Exception ex)
         {

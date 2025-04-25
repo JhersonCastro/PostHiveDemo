@@ -3,7 +3,7 @@
 @inject UserService UserService
 @inject CookiesService CookiesService
 @inject NavigationManager NavigationManager
-@if (_userContext != null && !loading)
+@if (_userContext != null && !_loading)
 {
     @* <UserHeader _userContext="_userContext">
 
@@ -21,7 +21,7 @@ else
 @code {
     //TODO: FIX THE FRIEND PAGE 
     [SupplyParameterFromQuery] public string Id { get; set; } = string.Empty;
-    private bool loading;
+    private bool _loading;
     private User? _userContext { get; set; }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -35,7 +35,7 @@ else
     {
         try
         {
-            loading = true;
+            _loading = true;
             StateHasChanged();
             _userContext = await UserService.GetUserById(int.Parse(Id));
 
@@ -48,7 +48,7 @@ else
             Console.WriteLine($"Error: {ex.Message}");
             NavigationManager.NavigateTo("/");
         }
-        loading = false;
+        _loading = false;
         
         StateHasChanged();
     }

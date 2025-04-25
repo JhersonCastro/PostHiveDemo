@@ -42,7 +42,7 @@ namespace PostHive.Services
             return randomPosts;
         }
 
-        public async Task<List<Post>> GetPostsByUserId(int UserId)
+        public async Task<List<Post>?> GetPostsByUserId(int UserId)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
             return await context.Posts

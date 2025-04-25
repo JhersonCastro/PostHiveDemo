@@ -28,7 +28,7 @@ namespace DbContext.Models
         [Required]
         public string Avatar { get; set; } = "default.png";
 
-        public ICollection<Post?> Posts { get; init; }
+        public ICollection<Post>? Posts { get; set; }
 
         // Relaciones donde este usuario es el iniciador
         public ICollection<Relationship> RelationshipsInitiated { get; init; }

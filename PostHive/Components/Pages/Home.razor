@@ -5,93 +5,63 @@
 @inject PostService PostService
 <PageTitle>Home</PageTitle>  
 
-<p>Page under maintenance</p>  
-<p>Please go to   
-    <MudLink Href="/auth"> this page to register or login</MudLink>  
-</p>  
+@if (Loading)
+{
+    <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
+}
+else
+{
+    <p>Page under maintenance</p>
+    <p>
+        Please go to
+        <MudLink Href="/auth"> this page to register or login</MudLink>
+    </p>
 
-<p>Please go to   
-    <MudLink Href="/profile"> this page to see your profile once registered or logged in</MudLink>  
-</p>  
+    <p>
+        Please go to
+        <MudLink Href="/profile"> this page to see your profile once registered or logged in</MudLink>
+    </p>
 
-<p>Please go to
-    <MudLink Href="/Chats/CommunityChat"> this page to enter the community chat (warning, reloading the page will lose all messages)</MudLink>
-</p>  
-
-@* 
-@foreach (var CurrentPost in _posts)
+    <p>
+        Please go to
+        <MudLink Href="/Chats/CommunityChat"> this page to enter the community chat (warning, reloading the page will lose all messages)</MudLink>
+    </p>
+    @if(UserState.CurrentUser != null)
     {
-        <div class="row justify-content-center">
-    <MudCard Class="col-10 col-sm-10 col-md-10 col-lg-10 mb-5">
-        <MudCardHeader>
-            <CardHeaderAvatar>
-                <MudAvatar Size="Size.Large">
-                    <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{CurrentPost.User.Avatar}")" Alt="Avatar"
-                    Style="border-radius:50%; max-height:150px"></MudImage>
-                </MudAvatar>
-            </CardHeaderAvatar>
-            <CardHeaderContent>
-                <MudLink Href="@($"{Const.url}/User/{CurrentPost.User.UserId}")">
-                    <MudText Typo="Typo.body1">@CurrentPost.User.Name</MudText>
-                    <MudText Typo="Typo.body2">@CurrentPost.User.NickName</MudText>
-                </MudLink>
-            </CardHeaderContent>
-            <CardHeaderActions>
-                <MudPaper Elevation="0">
-                    <MudText Typo="Typo.h5">@CurrentPost.CreatedDate.ToShortDateString()</MudText>
-                    @{
-                        var icon = CurrentPost.Privacy switch
-                        {
-                            PostPrivacy.p_public => @Icons.Material.Outlined.Public,
-                            PostPrivacy.p_private => @Icons.Material.Filled.Lock,
-                            PostPrivacy.p_only_friends => @Icons.Material.Filled.PeopleAlt,
-                            _ => ""
-                        };
-                    }
 
-                    <MudIcon Icon="@icon"></MudIcon>
-                </MudPaper>
-            </CardHeaderActions>
-        </MudCardHeader>
-        <MudCardContent>
-            <MudText Typo="Typo.h4">@CurrentPost.Body</MudText>
-            <section class="row g-3 p-3 justify-content-center">
-                @foreach (var media in CurrentPost.files)
-                {
-                    <div class="col-sm-12 @(CurrentPost.files.Count == 1 ? "col-md-10 col-lg-8": "col-md-6 col-lg-4") mb-2">
-                        @if (media.fileType.Split('/')[0] == "video")
-                        {
-                            <video class='same-size rounded-5' controls>
-                                <source src='@Const.url/Doctypes/@media.uri' type="@media.fileType">
-                            </video>
-                        }
-                        else
-                        {
-                            <img loading='lazy' class='same-size rounded-5' src='@Const.url/Doctypes/@media.uri' alt='Image' />
-                        }
-                    </div>
-                }
-            </section>
+        foreach (var friend in UserState.CurrentUser.Friends)
+        {
+            @foreach (var friendPost in friend.Posts)
+            {
+                <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="friendPost" CurrentUser="UserState.CurrentUser">
+                </PostHive.Components.Pages.Tags.Posts.Post>
+                <div style="margin-top: 3rem;"></div>
+            }
+        }
+    }
+}
 
-        </MudCardContent>
-        <MudCardContent>
-            <Comment post="CurrentPost" CurrentUser="CurrentUser" />
-        </MudCardContent>
-    </MudCard>
-</div> 
-    }*@
 
 @code{
-    // private static List<Post> _posts = new List<Post>();
-    // protected override async Task OnInitializedAsync()
-    // {
-    // }
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
-    //     if(firstRender){
-    //         _posts = await PostService.GetRandomPosts(10);
-    //     }
-    //     StateHasChanged();
-    // }
+    public bool Loading { get; set; } = true;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
+            if (UserState.CurrentUser == null)
+            {
+                Loading = false;
+                StateHasChanged();
+                return;
+            }
+            foreach (var friend in UserState.CurrentUser.Friends)
+            {
+                friend.Posts = await PostService.GetPostsAsync(friend, UserState.CurrentUser);
+            }
+
+            Loading = false;
+            StateHasChanged();
+        }
+    }
 }

@@ -1,3 +1,140 @@
+/*CREACION DE LAS TABLAS*/
+
+/*
+CREATE TABLE report_reasons (
+    ReportReasonId INT NOT NULL PRIMARY KEY CLUSTERED,
+    ReportReason NVARCHAR(128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    Description NVARCHAR(512) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+);
+
+CREATE TABLE report (
+    ReportId INT NOT NULL PRIMARY KEY CLUSTERED,
+    PostId INT NOT NULL,
+    ReportDate DATETIME2(7) NOT NULL,
+    ReportReasonId INT NOT NULL,
+    Description NVARCHAR(512) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    CONSTRAINT FK_report_posts FOREIGN KEY (PostId) REFERENCES posts(PostId),
+    CONSTRAINT FK_report_reasons FOREIGN KEY (ReportReasonId) REFERENCES report_reasons(ReportReasonId)
+);
+
+-- Índices no clusterizados
+CREATE INDEX IX_REPORT_PostId ON report(PostId);
+CREATE INDEX IX_REPORT_ReportReasonId ON report(ReportReasonId);
+
+CREATE TABLE relationship (
+    RelationshipKeyId INT NOT NULL PRIMARY KEY CLUSTERED,
+    UserId INT NOT NULL,
+    RelationshipUserIdA INT NOT NULL,
+    Status INT NOT NULL,
+    DateFriendship DATETIME2(7) NOT NULL,
+    CONSTRAINT FK_relationship_users FOREIGN KEY (UserId) REFERENCES users(UserId),
+    CONSTRAINT FK_relationship_usersA FOREIGN KEY (RelationshipUserIdA) REFERENCES users(UserId)
+);
+
+-- Índices no clusterizados
+CREATE INDEX IX_RELATIONSHIP_UserId ON relationship(UserId);
+CREATE INDEX IX_RELATIONSHIP_RelationshipUserIdA ON relationship(RelationshipUserIdA);
+
+
+CREATE TABLE post (
+    PostId INT NOT NULL PRIMARY KEY CLUSTERED,
+    UserId INT NOT NULL,
+    Body NVARCHAR(2048) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    CreatedDate DATETIME2(7) NOT NULL,
+    Privacy INT NOT NULL,
+    CONSTRAINT FK_post_users FOREIGN KEY (UserId) REFERENCES users(UserId)
+);
+
+-- Índice no clusterizado en UserId
+CREATE INDEX IX_POST_UserId ON post(UserId);
+
+
+CREATE TABLE notification (
+    NotificationId INT NOT NULL PRIMARY KEY CLUSTERED,
+    UserId INT NOT NULL,
+    Title NVARCHAR(128) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    Reason NVARCHAR(512) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    CreatedDate DATETIME2(7) NOT NULL,
+    IsRead BIT NOT NULL,
+    Uri NVARCHAR(2048) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    CONSTRAINT FK_notification_users FOREIGN KEY (UserId) REFERENCES users(UserId)
+);
+
+-- Índice no clusterizado en UserId
+CREATE INDEX IX_NOTIFICATION_UserId ON notification(UserId);
+
+
+CREATE TABLE users (
+    UserId INT NOT NULL PRIMARY KEY CLUSTERED,
+    Name NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    NickName NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    Bio NVARCHAR(256) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    Avatar NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+);
+
+CREATE TABLE credentials (
+    CredentialId INT NOT NULL PRIMARY KEY CLUSTERED,
+    Email NVARCHAR(200) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    Password NVARCHAR(200) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    UserId INT NOT NULL,
+    CONSTRAINT FK_credentials_users FOREIGN KEY (UserId) REFERENCES db10189.dbo.users(UserId) ON DELETE CASCADE
+);
+
+-- Índice no clusterizado en UserId
+CREATE INDEX IX_credentials_UserId ON credentials(UserId);
+
+CREATE TABLE files (
+    FilesId INT NOT NULL PRIMARY KEY CLUSTERED,
+    PostId INT NULL,
+    CommentId INT NULL,
+    FileType NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    Uri NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    CONSTRAINT FK_files_posts FOREIGN KEY (PostId) REFERENCES posts(PostId),
+    CONSTRAINT FK_files_comments FOREIGN KEY (CommentId) REFERENCES comments(CommentId)
+);
+
+-- Índices no clusterizados
+CREATE INDEX IX_files_PostId ON files(PostId);
+CREATE INDEX IX_files_CommentId ON files(CommentId);
+
+
+CREATE TABLE ban (
+    BanId INT NOT NULL PRIMARY KEY CLUSTERED,
+    UserId INT NOT NULL,
+    AdminReason NVARCHAR(100) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    BanDuration DATETIME2(7) NOT NULL,
+    ReportId INT NOT NULL,
+    CONSTRAINT FK_ban_users FOREIGN KEY (UserId) REFERENCES users(UserId),
+    CONSTRAINT FK_ban_reports FOREIGN KEY (ReportId) REFERENCES reports(ReportId)
+);
+
+CREATE TABLE comments (
+    CommentId INT NOT NULL PRIMARY KEY CLUSTERED,
+    CommentText NVARCHAR(512) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    UserId INT NOT NULL,
+    PostId INT NOT NULL,
+    CONSTRAINT FK_comments_users FOREIGN KEY (UserId) REFERENCES users(UserId),
+    CONSTRAINT FK_comments_posts FOREIGN KEY (PostId) REFERENCES posts(PostId)
+);
+
+-- Índices no clusterizados
+CREATE INDEX IX_comments_PostId ON comments(PostId);
+CREATE INDEX IX_comments_UserId ON comments(UserId);
+
+CREATE TABLE CookiesResearch (
+    Id INT NOT NULL PRIMARY KEY CLUSTERED,
+    CookieCurrentSession NVARCHAR(512) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+    UserId INT NOT NULL,
+    CONSTRAINT FK_CookiesResearch_users FOREIGN KEY (UserId) REFERENCES db10189.dbo.users(UserId) ON DELETE CASCADE
+);
+
+-- Índice no clusterizado en UserId
+CREATE INDEX IX_CookiesResearch_UserId ON CookiesResearch(UserId);
+
+*/
+
+
+
 IF OBJECT_ID('spUserRegister', 'P') IS NOT NULL
 BEGIN
     DROP PROCEDURE spUserRegister;
@@ -325,3 +462,38 @@ DELETE FROM Files
 WHERE URI = 'https://example.com/image1.jpg';
 DELETE FROM POST
 WHERE Body = 'Este es un ejemplo de publicación.';
+
+CREATE TRIGGER TRIGGERMAXCOOKIES
+ON CookiesResearch
+AFTER INSERT
+AS
+BEGIN
+    DECLARE @FirstId INT;
+    DECLARE @LAST_USER_LOGIN INT;
+    DECLARE @TotalRows INT;
+    
+    -- Get the UserId from the inserted row
+    SELECT TOP 1 @LAST_USER_LOGIN = UserId FROM inserted;
+
+    -- Count total records for the user
+    SELECT @TotalRows = COUNT(*) FROM CookiesResearch WHERE UserId = @LAST_USER_LOGIN;
+
+    -- If more than 10 records exist, delete the oldest entry
+    IF @TotalRows > 10 
+    BEGIN
+        DECLARE MAXCOOKIES CURSOR SCROLL FOR 
+        SELECT Id FROM CookiesResearch WHERE UserId = @LAST_USER_LOGIN;
+        
+        OPEN MAXCOOKIES;
+        
+        FETCH FIRST FROM MAXCOOKIES INTO @FirstId;
+        
+        IF @@FETCH_STATUS = 0 
+        BEGIN
+            DELETE FROM CookiesResearch WHERE Id = @FirstId;
+        END
+
+        CLOSE MAXCOOKIES;
+        DEALLOCATE MAXCOOKIES;
+    END
+END

@@ -40,9 +40,7 @@ else{
             CurrentPost = await PostService.GetPostByIdAsync(CurrentPost!.User, UserState.CurrentUser, idPost, true);
 
             if(CurrentPost == null)
-            {
                 NavigationManager.NavigateTo("/404");
-            }
         }
         catch (Exception ex)
         {

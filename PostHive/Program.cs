@@ -26,7 +26,7 @@ if (!builder.Environment.IsDevelopment())
 
 builder.Services.AddDbContextFactory<DatabaseContext>(
     options => 
-        options.UseSqlServer(builder.Configuration.GetConnectionString("FreeConnection"),
+        options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection"),
             sqlOptions =>
             {
                 sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
@@ -47,11 +47,11 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dataContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-    dataContext.Database.Migrate();
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dataContext =scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+//    dataContext.Database.Migrate();
+//}
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

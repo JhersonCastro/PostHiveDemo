@@ -56,7 +56,8 @@ public partial class UserComment : IAsyncDisposable
                     PostId = Post.PostId,
                     UserId = CurrentUser.UserId
                 };
-                await PostService.SetCommentToPost(comment);
+                await PostService
+                    .SetCommentToPost(comment);
 
                 if (_hubConnection is { State: HubConnectionState.Connected })
                 {

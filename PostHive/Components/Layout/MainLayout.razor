@@ -1,7 +1,10 @@
 ﻿@inherits LayoutComponentBase
 @using Services
 @inject ThemeState ThemeState
-
+@inject UserState UserState
+@inject CookiesService CookiesService
+@inject PostService PostService
+@inject NavigationManager NavigationManager
 @* Required *@
 <MudThemeProvider @bind-IsDarkMode="@ThemeState.IsDark" />
 <MudPopoverProvider />
@@ -11,10 +14,36 @@
 
 @* Needed for snackbars *@
 <MudSnackbarProvider />
-
-<NavMenu>
-    <MudSwitch @bind-Value="@ThemeState.IsDark" Class="col-auto" Color="Color.Primary" ThumbIcon="@Icons.Material.Filled.Brightness4"></MudSwitch>
-</NavMenu>
+@if (Loading)
+{
+    <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
+}
+else
+{
+    <NavMenu>
+        <ChildContent>
+            <MudSwitch @bind-Value="@ThemeState.IsDark" Class="col-auto" Color="Color.Primary" ThumbIcon="@Icons.Material.Filled.Brightness4"></MudSwitch>
+        </ChildContent>
+        <UserIcon>
+            @if(UserState.CurrentUser != null)
+            {
+                <MudMenu>
+                    <ActivatorContent>
+                        <MudAvatar Size="Size.Large" Style="">
+                            <MudImage Src="@($"{Const.url}/Doctypes/Avatars/{UserState.CurrentUser.Avatar}")" 
+                                      Style="max-height:200px;"></MudImage>
+                        </MudAvatar>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Href="@($"/profile")">Profile</MudMenuItem>
+                        <MudMenuItem Href="@($"/Settings")">Settings</MudMenuItem>
+                        <MudMenuItem OnClick="async() => await Logout()">Logout</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>               
+            }
+        </UserIcon>
+    </NavMenu>
+}
 
 @Body
 
@@ -25,5 +54,32 @@
     {
         ThemeState.IsDark = true;
         base.OnInitialized();
+    }
+    //TODO: make a dialog for logout confirmation
+    private async Task Logout()
+    {
+        await CookiesService.RemoveLocalCookies();
+        NavigationManager.NavigateTo("/", true);
+    }
+    public bool Loading { get; set; } = true;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
+            if (UserState.CurrentUser == null)
+            {
+                Loading = false;
+                StateHasChanged();
+                return;
+            }
+            foreach (var friend in UserState.CurrentUser.Friends)
+            {
+                friend.Posts = await PostService.GetPostsAsync(friend, UserState.CurrentUser);
+            }
+
+            Loading = false;
+            StateHasChanged();
+        }
     }
 }

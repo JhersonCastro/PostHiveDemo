@@ -1,31 +1,15 @@
 ﻿@page "/"  
 @using PostHive.Services  
 @inject UserState UserState  
-@inject CookiesService CookiesService  
 @inject PostService PostService
+@inject CookiesService CookiesService
 <PageTitle>Home</PageTitle>  
-
 @if (Loading)
 {
     <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
 }
 else
 {
-    <p>Page under maintenance</p>
-    <p>
-        Please go to
-        <MudLink Href="/auth"> this page to register or login</MudLink>
-    </p>
-
-    <p>
-        Please go to
-        <MudLink Href="/profile"> this page to see your profile once registered or logged in</MudLink>
-    </p>
-
-    <p>
-        Please go to
-        <MudLink Href="/Chats/CommunityChat"> this page to enter the community chat (warning, reloading the page will lose all messages)</MudLink>
-    </p>
     @if(UserState.CurrentUser != null)
     {
 
@@ -39,15 +23,18 @@ else
             }
         }
     }
+    else
+    {
+        <PostHive.Components.Pages.Auth.Auth></PostHive.Components.Pages.Auth.Auth>
+    }
 }
-
 
 @code{
     public bool Loading { get; set; } = true;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
+        
             UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
             if (UserState.CurrentUser == null)
             {
@@ -62,6 +49,6 @@ else
 
             Loading = false;
             StateHasChanged();
-        }
+        
     }
 }

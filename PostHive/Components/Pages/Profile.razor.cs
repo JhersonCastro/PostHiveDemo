@@ -1,17 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
-using DbContext.Models;
+﻿using DbContext.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.JSInterop;
 using MudBlazor;
+using System.ComponentModel.DataAnnotations;
 
 namespace PostHive.Components.Pages;
 
 public partial class Profile
 {
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+    private ElementReference _mudPaperRef;
+
     private EditContext? _editPostContext;
     private PostModel _postModel = new();
     private EditContext? _editUserUpdate;
     private UserUpdate _userModelUpdate = new();
-    private string? _error;
+
     private int _currentUploadFiles;
 
     public class UserUpdate
@@ -44,6 +50,8 @@ public partial class Profile
         {
             try
             {
+                await JSRuntime.InvokeVoidAsync("startResizeObserver", _mudPaperRef, DotNetObjectReference.Create(this));
+
                 UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
                 if (UserState.CurrentUser == null)
                     throw new Exception("User not found");
@@ -111,8 +119,9 @@ public partial class Profile
                 var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
                 var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes", uniqueFileName);
 
-
+                
                 await using var fileStream = new FileStream(path, FileMode.Create);
+               
                 var buffer = new byte[81920];
                 var readBytes = 0;
                 var readStream = file.OpenReadStream(Const.MaxFileSizePost);
@@ -130,9 +139,10 @@ public partial class Profile
                     StateHasChanged();
                 }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
-                _error = ex.Message;
+                
+                Snackbar.Add($"Error uploading file {file.Name} the file is too long (max file size: {Const.MaxFileSizePost / 1000000}Mb)", Severity.Error);
             }
 
             _currentUploadFiles--;
@@ -145,7 +155,10 @@ public partial class Profile
             return;
 
         if (_currentUploadFiles > 0)
-            _error = "Still uploading files, please wait";
+        {
+            Snackbar.Add("Still uploading files, please wait", Severity.Error);
+            return;
+        }
         var files = _fileProgresses.Keys.Select(file => new Files() { Uri = file.Uri, FileType = file.FileType })
             .ToList();
 
@@ -167,5 +180,21 @@ public partial class Profile
         UserState.CurrentUser.Posts.Add(t);
         Snackbar.Add("Post created", Severity.Success);
         StateHasChanged();
+    }
+
+    private double mediaSectionWidth;
+
+    [JSInvokable]
+    public void UpdateWidth(double newWidth)
+    {
+        // Update the width to be 1/3 of the MudPaper's width
+        mediaSectionWidth = newWidth / 3;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Stop observing when the component is disposed
+        await JSRuntime.InvokeVoidAsync("stopResizeObserver", _mudPaperRef);
     }
 }

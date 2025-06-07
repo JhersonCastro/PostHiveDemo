@@ -94,7 +94,7 @@
                 <section class="row g-3 p-3 justify-content-center">
                     @foreach (var media in CurrentPost.Files)
                     {
-                        <div class="col-sm-12 @(CurrentPost.Files.Count == 1 ? "col-md-10 col-lg-8": "col-md-6 col-lg-4") mb-2">
+                        <div class="col-sm-12 @(CurrentPost.Files.Count == 1 ? "col-md-10 col-lg-8": "col-md-6 col-lg-6") mb-2">
                             @if (media.FileType.Split('/')[0] == "video")
                             {
                                 <video class='same-size rounded-5' controls>
@@ -122,7 +122,7 @@
                 </MudText>
             </MudCardHeader>
             <MudCardContent>
-                <Comment post="CurrentPost" CurrentUser="CurrentUser" />
+                <Comment @key="CurrentPost.PostId" post="CurrentPost" CurrentUser="CurrentUser" />
             </MudCardContent>
         </MudCard>
     </MudItem>

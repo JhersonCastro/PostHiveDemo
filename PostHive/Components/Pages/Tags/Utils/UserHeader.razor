@@ -19,6 +19,7 @@ else
                         <MudStack Row="true"
                         AlignItems="AlignItems.Center"
                         Spacing="1"
+                        Style="margin-right:2rem"
                         Class="position-absolute bottom-0 end-0">
 
                             <MudTooltip Text="Change Avatar">
@@ -33,11 +34,7 @@ else
                                     </ActivatorContent>
                                 </MudFileUpload>
                             </MudTooltip>
-                            <MudTooltip Text="LogOut">
-                                <MudButton Class="no-hover" OnClick="(async()  => await logOutUser.InvokeAsync())">
-                                    <MudFab Color="Color.Error" StartIcon="@Icons.Material.Filled.Logout" />
-                                </MudButton>
-                            </MudTooltip>
+                          
 
                         </MudStack>
                     }

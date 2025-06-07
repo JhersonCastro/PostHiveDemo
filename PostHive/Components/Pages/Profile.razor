@@ -9,13 +9,30 @@
 @inject UserService UserService
 @inject CookiesService CookiesService
 
-<div>
-    @if (!string.IsNullOrEmpty(_error))
-    {
-        <p class="text-danger">Error: @_error</p>
-    }
-</div>
+<script>
+    let observers = new Map();
 
+    function startResizeObserver(element, dotNetHelper) {
+        if (!element) return;
+
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const width = entry.contentRect.width;
+                dotNetHelper.invokeMethodAsync("UpdateWidth", width);
+            }
+        });
+
+        observer.observe(element);
+        observers.set(element, observer);
+    }
+
+    function stopResizeObserver(element) {
+        const observer = observers.get(element);
+        if (observer) {
+            observer.disconnect();
+            observers.delete(element);
+        }
+    }</script>
 @if (UserState.CurrentUser==null)
 {
     <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
@@ -72,22 +89,52 @@
                             </MudItem>
                         </MudGrid>
                     </EditForm>
+                    <div @ref="_mudPaperRef" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; padding: 1rem;">
+                        <!-- Sección de progreso de subida -->
+                            @if (_currentUploadFiles > 0)
+                            {
+                                <MudText Typo="Typo.subtitle2">
+                                    Please don't close this page, Uploading @_currentUploadFiles file(s)
+                                </MudText>
+                            }
+                            @foreach (var file in _fileProgresses.Keys)
+                            {
+                                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                                if (_fileProgresses[file] == 100)
+                                {
+                                //TODO: Make better ui to the Delete file before the post
 
-                    <!-- Sección de progreso de subida -->
-                    <MudPaper Class="mt-4 p-3" Elevation="1">
-                        @if (_currentUploadFiles > 0)
-                        {
-                            <MudText Typo="Typo.subtitle2">
-                                Please don't close this page, Uploading @_currentUploadFiles file(s)
-                            </MudText>
-                        }
-                        @foreach (var file in _fileProgresses.Keys)
-                        {
-                            <MudProgressLinear Value="@_fileProgresses[file]" BufferValue="100" Color="Color.Primary" Class="mt-2" />
-                            <!-- También se muestra el porcentaje con formato -->
-                            <MudText Typo="Typo.caption">@($"{_fileProgresses[file]:0.00}%")</MudText>
-                        }
-                    </MudPaper>
+                                <div style="position: relative; display: inline-block; width: @(mediaSectionWidth)px; height: auto;">
+
+                                    @if (file.FileType.Split('/')[0] == "video")
+                                            {
+                                                <video class=' rounded-5' controls 
+                                                style="width: @(mediaSectionWidth)px; height:auto; 
+                                                    aspect-ratio: 1/1; object-fit:contain;background-color:black">
+                                                    <source src='@Const.url/Doctypes/@file.Uri' type="@file.FileType">
+                                                </video>
+                                            }
+                                            else
+                                            {
+                                                <img loading='lazy'
+                                             style="width: @(mediaSectionWidth)px; height:auto; aspect-ratio: 1/1;
+                                                    object-fit:contain;background-color:black"
+                                                    class=' rounded-5' src='@Const.url/Doctypes/@file.Uri' alt='Image' />
+                                            }
+
+                                    <MudFab Color="Color.Error" StartIcon="@Icons.Material.Outlined.Delete"            
+                                    Style="position: absolute; top: 8px; right: 8px; z-index: 10;" />
+                                </div>
+                                }
+                                else
+                                {
+                                    <MudProgressLinear Value="@_fileProgresses[file]" BufferValue="100" Color="Color.Primary" Class="mt-2" />
+                                    <!-- También se muestra el porcentaje con formato -->
+                                    <MudText Typo="Typo.caption">@($"{_fileProgresses[file]:0.00}%")</MudText>
+                                }
+                            }
+                    </div>
+                   
                 </MudPaper>
             </MudItem>
         </MudGrid>

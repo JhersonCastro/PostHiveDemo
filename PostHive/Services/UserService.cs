@@ -7,28 +7,12 @@ namespace PostHive.Services
 {
     public class UserService(IDbContextFactory<DatabaseContext> contextFactory)
     {
-        public async Task<List<User>> GetUsersAsync()
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.Users
-                .Where(u => u.Posts.Count > 0)
-                .Include(u => u.Posts)
-                .ThenInclude(p => p.Comments)
-                .ThenInclude(c => c.User)
-                .Include(u => u.Posts)
-                .ThenInclude(p => p.Files)
-                .ToListAsync();
-        }
-
-        public async Task<User?> GetUserByIdAsync(int id)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.Users
-                .Include(u => u.Posts)
-                .ThenInclude(p => p.Files)
-                .FirstOrDefaultAsync(u => u.UserId == id);
-        }
-
+        /// <summary>
+        /// Creates a new user in the database using a stored procedure and returns the created user with their posts and files.
+        /// </summary>
+        /// <param name="user">The user entity to create.</param>
+        /// <param name="credential">The credential entity containing email and password.</param>
+        /// <returns>The newly created user if successful; otherwise, null.</returns>
         public async Task<User?> CreateUserAsync(User user, Credential credential)
         {
             await using var context = await contextFactory.CreateDbContextAsync() ;
@@ -61,16 +45,33 @@ namespace PostHive.Services
             return newUser;
         }
 
-
+        /// <summary>
+        /// Hashes a plain text password using BCrypt.
+        /// </summary>
+        /// <param name="password">The plain text password.</param>
+        /// <returns>The hashed password.</returns>
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
+
+        /// <summary>
+        /// Retrieves a user by their unique identifier.
+        /// </summary>
+        /// <param name="id">The user ID.</param>
+        /// <returns>The user if found; otherwise, null.</returns>
         public async Task<User?> GetUserById(int id)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
             return await context.Users.FirstOrDefaultAsync(u => u.UserId == id);
         }
+
+        /// <summary>
+        /// Authenticates a user by verifying their email and password.
+        /// </summary>
+        /// <param name="credential">The credential containing email and password.</param>
+        /// <returns>The authenticated user with posts, files, and friends if successful; otherwise, throws an exception.</returns>
+        /// <exception cref="Exception">Thrown if the user is not found or the password does not match.</exception>
         public async Task<User?> AuthenticateLoginAsync(Credential credential)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -91,8 +92,14 @@ namespace PostHive.Services
                 return user;
             }
 
-                throw new Exception("The password does not match the email.");
+            throw new Exception("The password does not match the email.");
         }
+
+        /// <summary>
+        /// Retrieves a list of friends for a given user by user ID.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        /// <returns>A list of users who are friends with the specified user.</returns>
         public async Task<List<User>> GetFriendsAsync(int userId)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -120,10 +127,23 @@ namespace PostHive.Services
             return new List<User>(); // Devuelve una lista vacía si el usuario no existe
         }
 
+        /// <summary>
+        /// Verifies a plain text password against a hashed password using BCrypt.
+        /// </summary>
+        /// <param name="password">The plain text password.</param>
+        /// <param name="hashedPassword">The hashed password.</param>
+        /// <returns>True if the password matches; otherwise, false.</returns>
         private bool VerifyPassword(string password, string hashedPassword)
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
+
+        /// <summary>
+        /// Updates the avatar of a user by executing a stored procedure.
+        /// </summary>
+        /// <param name="userId">The user ID.</param>
+        /// <param name="newAvatar">The new avatar file name or URI.</param>
+        /// <exception cref="Exception">Thrown if there is an error updating the avatar.</exception>
         public async Task UpdateAvatarAsync(int userId, string newAvatar)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -145,21 +165,6 @@ namespace PostHive.Services
             {
                 Console.WriteLine(e);
                 throw new Exception("Error updating avatar", e);
-            }
-        }
-        public async Task UpdateUserAsync(User userChange)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userChange.UserId);
-            if (user != null)
-            {
-                user.Avatar = userChange.Avatar ?? user.Avatar;
-                user.Name = userChange.Name ?? user.Name;
-                user.NickName = userChange.NickName ?? user.NickName;
-
-                context.Users.Update(user);
-                await context.SaveChangesAsync();
             }
         }
 

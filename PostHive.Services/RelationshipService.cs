@@ -1,7 +1,6 @@
 ﻿using DbContext;
 using DbContext.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using MudBlazor;
 
 namespace PostHive.Services
@@ -15,15 +14,15 @@ namespace PostHive.Services
     }
     public class RelationshipService(IDbContextFactory<DatabaseContext> contextFactory)
     {
-        
+
         public async Task<ActionType> SetRelationshipAsync(User userA, User userB)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
             //Check if the Relationship exists
-            var relationship = await context.Relationship.FirstOrDefaultAsync(p => 
+            var relationship = await context.Relationship.FirstOrDefaultAsync(p =>
             (p.UserId == userA.UserId && p.RelationshipUserIdA == userB.UserId) ||
             (p.UserId == userB.UserId && p.RelationshipUserIdA == userA.UserId));
-            
+
             if (relationship == null)
             {
                 Relationship newRelationship = new Relationship
@@ -37,7 +36,7 @@ namespace PostHive.Services
             }
             //Now, we know that the relationship exists, but how is its status?            
             //1st Check if the UserA (User that clicked the button)
-            if(IsGenerateByUserA(relationship, userA))
+            if (IsGenerateByUserA(relationship, userA))
             {
                 //If the relationship is in request status, we remove the relationship
                 context.Relationship.Remove(relationship);
@@ -79,7 +78,7 @@ namespace PostHive.Services
         public async Task<string> GetRelationIcon(User userA, User userB)
         {
             Relationship? relationship = await GetRelationship(userA, userB);
-            if(relationship == null)
+            if (relationship == null)
             {
                 return Icons.Material.Filled.PersonAdd;
             }

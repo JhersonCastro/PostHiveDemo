@@ -17,7 +17,7 @@ public class ReportReasons
     [Required]
     [MaxLength(64)]
     public string ReportReason { get; set; }
-    
+
     [MaxLength(256)]
     public string? Description { get; set; }
 }

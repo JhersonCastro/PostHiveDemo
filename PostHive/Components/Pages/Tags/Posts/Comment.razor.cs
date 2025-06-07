@@ -1,10 +1,10 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using DbContext.Models;
+﻿using DbContext.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
 using PostHive.Components.Pages.Tags.Dialogs;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PostHive.Components.Pages.Tags.Posts;
 
@@ -24,7 +24,7 @@ public partial class Comment : IAsyncDisposable
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(NavigationManager.ToAbsoluteUri("/CommentHub"))
                 .Build();
-            
+
             _hubConnection.On<string>("ReceiveDeleteComment", async (comment) =>
             {
                 var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
@@ -39,7 +39,7 @@ public partial class Comment : IAsyncDisposable
             });
             await _hubConnection.StartAsync();
             await _hubConnection.SendAsync("JoinGroup", post.PostId.ToString());
-           
+
         }
         catch (Exception ex)
         {

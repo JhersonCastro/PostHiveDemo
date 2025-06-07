@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DbContext.Models
@@ -10,7 +9,7 @@ namespace DbContext.Models
     public class User
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; init; }
 
         [StringLength(50)]

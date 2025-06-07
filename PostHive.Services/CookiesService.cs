@@ -1,7 +1,6 @@
 ﻿using DbContext;
 using DbContext.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace PostHive.Services
 {
@@ -138,16 +137,16 @@ namespace PostHive.Services
             {
                 var friends = user.RelationshipsInitiated
                     .Where(r => r.Status == RelationshipStatus.accept)
-                    .Select(r => r.RelatedUser) 
+                    .Select(r => r.RelatedUser)
                     .Union(user.RelationshipsReceived
                         .Where(r => r.Status == RelationshipStatus.accept)
-                        .Select(r => r.User)) 
+                        .Select(r => r.User))
                     .ToList();
 
                 return friends;
             }
 
-            return new List<User>(); 
+            return new List<User>();
         }
     }
 }

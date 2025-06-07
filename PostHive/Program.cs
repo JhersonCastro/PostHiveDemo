@@ -1,17 +1,19 @@
-using PostHive.Components;
-using PostHive.Services;
-using PostHive.SignalR;
+using Blazor.SubtleCrypto;
 using DbContext;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using PostHive.Components;
+using PostHive.Services;
+using PostHive.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddSignalR(options => {
+builder.Services.AddSignalR(options =>
+{
     options.DisableImplicitFromServicesParameters = true;
 });
 
@@ -23,9 +25,9 @@ if (!builder.Environment.IsDevelopment())
             new[] { "application/octet-stream" });
     });
 }
-
+builder.Services.AddSubtleCrypto(opt => opt.Key = builder.Configuration["SecretKey"]);
 builder.Services.AddDbContextFactory<DatabaseContext>(
-    options => 
+    options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("FreeConnection"),
             sqlOptions =>
             {

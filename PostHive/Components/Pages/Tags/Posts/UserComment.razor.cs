@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.JSInterop;
 using MudBlazor;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;

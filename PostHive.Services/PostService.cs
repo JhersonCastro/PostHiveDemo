@@ -1,11 +1,9 @@
 ﻿using DbContext;
 using DbContext.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using System.Data;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 
 namespace PostHive.Services
 {
@@ -18,7 +16,7 @@ namespace PostHive.Services
                 .Include(x => x.User)
                 .Include(p => p.Files)
                 .Include(p => p.Comments)
-                .ThenInclude(c => c.User) 
+                .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(p => p.PostId == postId);
             return post;
         }
@@ -94,8 +92,8 @@ namespace PostHive.Services
             var relationship = await relationshipService.GetRelationship(user, userRequest);
 
             if (relationship != null && relationship.Status == RelationshipStatus.blocked)
-                    return new List<Post>();
-            
+                return new List<Post>();
+
             isFriend = relationship?.Status == RelationshipStatus.accept ? true : false;
 
             var posts = await context.Posts

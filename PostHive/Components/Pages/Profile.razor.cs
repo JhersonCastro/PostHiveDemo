@@ -21,12 +21,12 @@ public partial class Profile
 
     public class UserUpdate
     {
-        [Required] [MinLength(5)] public string? Name { get; set; }
+        [Required][MinLength(5)] public string? Name { get; set; }
 
-        [Required] [MinLength(5)] public string? NickName { get; set; }
+        [Required][MinLength(5)] public string? NickName { get; set; }
         [MinLength(0)] public string Bio { get; set; } = "";
     }
-    
+
     public class PostModel
     {
         [Required]
@@ -44,7 +44,8 @@ public partial class Profile
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender) {
+        if (firstRender)
+        {
             try
             {
 
@@ -71,7 +72,7 @@ public partial class Profile
         }
     }
 
-   
+
 
     private async Task BtnAvatarHandlerAsync(IBrowserFile e)
     {
@@ -118,9 +119,9 @@ public partial class Profile
                 var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
                 var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes", uniqueFileName);
 
-                
+
                 await using var fileStream = new FileStream(path, FileMode.Create);
-               
+
                 var buffer = new byte[81920];
                 var readBytes = 0;
                 var readStream = file.OpenReadStream(Const.MaxFileSizePost);
@@ -140,7 +141,7 @@ public partial class Profile
             }
             catch (IOException)
             {
-                
+
                 Snackbar.Add($"Error uploading file {file.Name} the file is too long (max file size: {Const.MaxFileSizePost / 1000000}Mb)", Severity.Error);
             }
 

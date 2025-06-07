@@ -1,11 +1,12 @@
-﻿using DbContext;
+﻿using Blazor.SubtleCrypto;
+using DbContext;
 using DbContext.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace PostHive.Services
 {
-    public class UserService(IDbContextFactory<DatabaseContext> contextFactory)
+    public class UserService(IDbContextFactory<DatabaseContext> contextFactory, ICryptoService cryptoService)
     {
         /// <summary>
         /// Creates a new user in the database using a stored procedure and returns the created user with their posts and files.
@@ -15,12 +16,12 @@ namespace PostHive.Services
         /// <returns>The newly created user if successful; otherwise, null.</returns>
         public async Task<User?> CreateUserAsync(User user, Credential credential)
         {
-            await using var context = await contextFactory.CreateDbContextAsync() ;
-            
+            await using var context = await contextFactory.CreateDbContextAsync();
+
             var nameParam = new SqlParameter("@Name", user.Name);
             var nickNameParam = new SqlParameter("@NickName", user.NickName);
             var emailParam = new SqlParameter("@Email", credential.Email);
-            var passwordParam = new SqlParameter("@Password", HashPassword(credential.Password));
+            var passwordParam = new SqlParameter("@Password", await HashPassword(credential.Password));
             var userIdOutput = new SqlParameter("@UserId", System.Data.SqlDbType.Int)
             {
                 Direction = System.Data.ParameterDirection.Output
@@ -47,9 +48,9 @@ namespace PostHive.Services
         public async Task UpdateUserAsync(User userChange)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            if(context.Users.Any(u => u.NickName == userChange.NickName && u.UserId != userChange.UserId))
+            if (context.Users.Any(u => u.NickName == userChange.NickName && u.UserId != userChange.UserId))
                 throw new Exception($"Nickname {userChange.NickName} already use for other user!");
-            
+
             var user = new User { UserId = userChange.UserId };
 
             context.Users.Attach(user);
@@ -70,9 +71,10 @@ namespace PostHive.Services
         /// </summary>
         /// <param name="password">The plain text password.</param>
         /// <returns>The hashed password.</returns>
-        private string HashPassword(string password)
+        private async Task<string> HashPassword(string password)
         {
-            return BCrypt.Net.BCrypt.HashPassword(password);
+            CryptoResult encrypted = await cryptoService.EncryptAsync(password);
+            return encrypted.Value;
         }
 
         /// <summary>
@@ -100,9 +102,9 @@ namespace PostHive.Services
                 .FirstOrDefaultAsync(c => c.Email == credential.Email);
 
             if (userCredential == null)
-                throw new Exception("No user found with the provided email.");
+                throw new Exception("Invalid credentials");
 
-            if (VerifyPassword(credential.Password, userCredential.Password))
+            if (await VerifyPassword(credential.Password, userCredential.Password))
             {
                 var user = await context.Users
                     .Include(u => u.Posts)
@@ -112,7 +114,7 @@ namespace PostHive.Services
                 return user;
             }
 
-            throw new Exception("The password does not match the email.");
+            throw new Exception("Invalid credentials");
         }
 
         /// <summary>
@@ -153,10 +155,12 @@ namespace PostHive.Services
         /// <param name="password">The plain text password.</param>
         /// <param name="hashedPassword">The hashed password.</param>
         /// <returns>True if the password matches; otherwise, false.</returns>
-        private bool VerifyPassword(string password, string hashedPassword)
+        private async Task<bool> VerifyPassword(string password, string encryptedPassword)
         {
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+            string decryptedPassword = await cryptoService.DecryptAsync(encryptedPassword);
+            return password == decryptedPassword;
         }
+
 
         /// <summary>
         /// Updates the avatar of a user by executing a stored procedure.

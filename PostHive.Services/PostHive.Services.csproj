@@ -12,7 +12,7 @@
 
   <ItemGroup>
 	  <FrameworkReference Include="Microsoft.AspNetCore.App" />
-	  <PackageReference Include="BCrypt.Net" Version="0.1.0" />
+	  <PackageReference Include="Blazor.SubtleCrypto" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.0" />
     <PackageReference Include="MudBlazor" Version="8.7.0" />
   </ItemGroup>

@@ -1,9 +1,6 @@
 ﻿using DbContext.Models;
 using Microsoft.AspNetCore.Components;
 using PostHive.Services;
-using static MudBlazor.CategoryTypes;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace PostHive.Components.Pages;
 
@@ -15,7 +12,7 @@ public partial class UserPage
     private string _previousId = null!;
     public Task RefreshFriends(User? user, ActionType actionType)
     {
-        if(_userContext == null || user == null)
+        if (_userContext == null || user == null)
             return Task.CompletedTask;
         switch (actionType)
         {
@@ -43,7 +40,7 @@ public partial class UserPage
             await LoadUserContextAsync();
         }
     }
-    
+
     private async Task LoadUserContextAsync()
     {
         try
@@ -66,7 +63,7 @@ public partial class UserPage
                 Posts = await PostService.GetPostsAsync(user, UserState.CurrentUser),
                 Friends = await UserService.GetFriendsAsync(user.UserId)
             };
-            if(UserState.CurrentUser != null)
+            if (UserState.CurrentUser != null)
             {
                 var relationship = await RelationshipService.GetRelationship(UserState.CurrentUser, user);
                 if (relationship is { Status: RelationshipStatus.blocked }) NavigationManager.NavigateTo("/");

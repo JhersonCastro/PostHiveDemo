@@ -22,7 +22,7 @@ namespace DbContext.Models
         public string NickName { get; set; }
 
         [StringLength(128)]
-        public string Bio { get; init; } = "";
+        public string Bio { get; set; } = "";
 
         [StringLength(50)]
         [Required]

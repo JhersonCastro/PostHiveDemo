@@ -44,6 +44,26 @@ namespace PostHive.Services
             }
             return newUser;
         }
+        public async Task UpdateUserAsync(User userChange)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            if(context.Users.Any(u => u.NickName == userChange.NickName && u.UserId != userChange.UserId))
+                throw new Exception($"Nickname {userChange.NickName} already use for other user!");
+            
+            var user = new User { UserId = userChange.UserId };
+
+            context.Users.Attach(user);
+
+            user.Name = userChange.Name;
+            user.NickName = userChange.NickName;
+            user.Bio = userChange.Bio;
+
+            context.Entry(user).Property(x => x.Name).IsModified = true;
+            context.Entry(user).Property(x => x.NickName).IsModified = true;
+            context.Entry(user).Property(x => x.Bio).IsModified = true;
+
+            await context.SaveChangesAsync();
+        }
 
         /// <summary>
         /// Hashes a plain text password using BCrypt.

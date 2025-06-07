@@ -86,8 +86,11 @@
             var response = await UserService.CreateUserAsync(user, credential);
             UserState.CurrentUser = response;
 
-            var value = await CookiesService.AddCookieCurrentSession(response);
-            await LocalStorageService.SetItemAsync("CurrentSession", value);
+            if (response != null)
+            {
+                var value = await CookiesService.AddCookieCurrentSession(response);
+                await LocalStorageService.SetItemAsync("CurrentSession", value);
+            }
 
             NavigationManager.NavigateTo("/profile", true);
         }

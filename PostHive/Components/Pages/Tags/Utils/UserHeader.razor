@@ -46,6 +46,7 @@ else
                             Icons.Material.Filled.Cancel => Color.Error,
                             Icons.Material.Filled.PersonRemove => Color.Error,
                             Icons.Material.Filled.PersonAdd => Color.Primary,
+                            _ => throw new ArgumentOutOfRangeException()
                         };
                         <MudStack Row="false"
                         AlignItems="AlignItems.Center"

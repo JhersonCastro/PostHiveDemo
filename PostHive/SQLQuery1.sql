@@ -462,38 +462,3 @@ DELETE FROM Files
 WHERE URI = 'https://example.com/image1.jpg';
 DELETE FROM POST
 WHERE Body = 'Este es un ejemplo de publicación.';
-
-CREATE TRIGGER TRIGGERMAXCOOKIES
-ON CookiesResearch
-AFTER INSERT
-AS
-BEGIN
-    DECLARE @FirstId INT;
-    DECLARE @LAST_USER_LOGIN INT;
-    DECLARE @TotalRows INT;
-    
-    -- Get the UserId from the inserted row
-    SELECT TOP 1 @LAST_USER_LOGIN = UserId FROM inserted;
-
-    -- Count total records for the user
-    SELECT @TotalRows = COUNT(*) FROM CookiesResearch WHERE UserId = @LAST_USER_LOGIN;
-
-    -- If more than 10 records exist, delete the oldest entry
-    IF @TotalRows > 10 
-    BEGIN
-        DECLARE MAXCOOKIES CURSOR SCROLL FOR 
-        SELECT Id FROM CookiesResearch WHERE UserId = @LAST_USER_LOGIN;
-        
-        OPEN MAXCOOKIES;
-        
-        FETCH FIRST FROM MAXCOOKIES INTO @FirstId;
-        
-        IF @@FETCH_STATUS = 0 
-        BEGIN
-            DELETE FROM CookiesResearch WHERE Id = @FirstId;
-        END
-
-        CLOSE MAXCOOKIES;
-        DEALLOCATE MAXCOOKIES;
-    END
-END

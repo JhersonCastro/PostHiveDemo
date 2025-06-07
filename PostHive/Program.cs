@@ -1,4 +1,3 @@
-using Blazor.SubtleCrypto;
 using DbContext;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +24,6 @@ if (!builder.Environment.IsDevelopment())
             new[] { "application/octet-stream" });
     });
 }
-builder.Services.AddSubtleCrypto(opt => opt.Key = builder.Configuration["SecretKey"]);
 builder.Services.AddDbContextFactory<DatabaseContext>(
     options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("FreeConnection"),

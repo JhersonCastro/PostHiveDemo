@@ -1,12 +1,11 @@
-﻿using Blazor.SubtleCrypto;
-using DbContext;
+﻿using DbContext;
 using DbContext.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace PostHive.Services
 {
-    public class UserService(IDbContextFactory<DatabaseContext> contextFactory, ICryptoService cryptoService)
+    public class UserService(IDbContextFactory<DatabaseContext> contextFactory)
     {
         /// <summary>
         /// Creates a new user in the database using a stored procedure and returns the created user with their posts and files.
@@ -21,7 +20,7 @@ namespace PostHive.Services
             var nameParam = new SqlParameter("@Name", user.Name);
             var nickNameParam = new SqlParameter("@NickName", user.NickName);
             var emailParam = new SqlParameter("@Email", credential.Email);
-            var passwordParam = new SqlParameter("@Password", await HashPassword(credential.Password));
+            var passwordParam = new SqlParameter("@Password", HashPassword(credential.Password));
             var userIdOutput = new SqlParameter("@UserId", System.Data.SqlDbType.Int)
             {
                 Direction = System.Data.ParameterDirection.Output
@@ -71,10 +70,9 @@ namespace PostHive.Services
         /// </summary>
         /// <param name="password">The plain text password.</param>
         /// <returns>The hashed password.</returns>
-        private async Task<string> HashPassword(string password)
+        private string HashPassword(string password)
         {
-            CryptoResult encrypted = await cryptoService.EncryptAsync(password);
-            return encrypted.Value;
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
         /// <summary>
@@ -102,9 +100,9 @@ namespace PostHive.Services
                 .FirstOrDefaultAsync(c => c.Email == credential.Email);
 
             if (userCredential == null)
-                throw new Exception("Invalid credentials");
+                throw new Exception("No user found with the provided email.");
 
-            if (await VerifyPassword(credential.Password, userCredential.Password))
+            if (VerifyPassword(credential.Password, userCredential.Password))
             {
                 var user = await context.Users
                     .Include(u => u.Posts)
@@ -114,7 +112,7 @@ namespace PostHive.Services
                 return user;
             }
 
-            throw new Exception("Invalid credentials");
+            throw new Exception("The password does not match the email.");
         }
 
         /// <summary>
@@ -155,12 +153,10 @@ namespace PostHive.Services
         /// <param name="password">The plain text password.</param>
         /// <param name="hashedPassword">The hashed password.</param>
         /// <returns>True if the password matches; otherwise, false.</returns>
-        private async Task<bool> VerifyPassword(string password, string encryptedPassword)
+        private bool VerifyPassword(string password, string hashedPassword)
         {
-            string decryptedPassword = await cryptoService.DecryptAsync(encryptedPassword);
-            return password == decryptedPassword;
+            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
-
 
         /// <summary>
         /// Updates the avatar of a user by executing a stored procedure.

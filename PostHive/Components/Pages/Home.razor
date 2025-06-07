@@ -3,6 +3,7 @@
 @inject UserState UserState  
 @inject PostService PostService
 @inject CookiesService CookiesService
+@inject NavigationManager NavigationManager
 <PageTitle>Home</PageTitle>  
 @if (Loading)
 {
@@ -25,7 +26,7 @@ else
     }
     else
     {
-        <PostHive.Components.Pages.Auth.Auth></PostHive.Components.Pages.Auth.Auth>
+        NavigationManager.NavigateTo("/Auth", true);
     }
 }
 

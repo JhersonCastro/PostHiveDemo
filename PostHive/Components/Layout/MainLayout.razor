@@ -1,10 +1,13 @@
 ﻿@inherits LayoutComponentBase
+@using PostHive.Components.Pages.Tags.Dialogs
 @using Services
 @inject ThemeState ThemeState
 @inject UserState UserState
 @inject CookiesService CookiesService
 @inject PostService PostService
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+
 @* Required *@
 <MudThemeProvider @bind-IsDarkMode="@ThemeState.IsDark" />
 <MudPopoverProvider />
@@ -58,6 +61,15 @@ else
     //TODO: make a dialog for logout confirmation
     private async Task Logout()
     {
+        var response = await DialogService.ShowAsync<ConfirmDialog>("Logout", new DialogParameters
+        {
+            { "Title", "Logout" },
+            { "Content", "Are you sure you want logout now?" }
+        });
+        var result = await response.Result;
+        if(result.Canceled)
+            return;
+        
         await CookiesService.RemoveLocalCookies();
         NavigationManager.NavigateTo("/", true);
     }

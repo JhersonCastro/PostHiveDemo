@@ -58,7 +58,8 @@ namespace DbContext
                 .WithMany()
                 .HasForeignKey(b => b.ReportId)
                 .OnDelete(DeleteBehavior.Restrict); // Evita cascada
-
+            modelBuilder.Entity<User>()
+                .ToTable(tb => tb.HasTrigger("NickNameAlreadyExists"));
         }
 
 

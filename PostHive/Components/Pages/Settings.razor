@@ -1,0 +1,119 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using PostHive.Services
+@inject UserState UserState
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+@inject ISnackbar Snackbar
+@page "/settings"
+<EditForm Model="@user" OnValidSubmit="async () => await SubmitForm()">
+    <DataAnnotationsValidator />
+    <MudContainer MaxWidth="MaxWidth.Small" Class="mt-4">
+        <MudPaper Class="pa-4">
+            <MudGrid Container="true" Spacing="3">
+                <MudItem xs="12">
+                    <MudTextField T="string"
+                                  Label="Name"
+                                  @bind-Value="user.Name"
+                                  For="@(() => user.Name)"
+                                  Required="true" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField T="string"
+                                  Label="NickName"
+                                  @bind-Value="user.NickName"
+                                  For="@(() => user.NickName)"
+                                  Required="true" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField T="string"
+                                  Label="Bio"
+                                  @bind-Value="user.Bio"
+                                  For="@(() => user.Bio)"
+                                  Required="true"
+                                  Lines="3"
+                                  Textarea="true" />
+                </MudItem>
+
+                <MudItem xs="12" Class="d-flex justify-end">
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary">
+                        Save
+                    </MudButton>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <ValidationSummary />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudContainer>
+</EditForm>
+
+@code {
+    // Instancia de tu modelo con DataAnnotations
+    private UserModel user = new UserModel();
+
+    protected override void OnInitialized()
+    {
+        // OPCIÓN 1: binder directo (no clonas, apuntas al mismo objeto)
+        // model = UserState.CurrentUser;
+
+        // OPCIÓN 2: clonar el UserState en un objeto nuevo
+        // Para evitar mutar el estado mientras el usuario está escribiendo,
+        // y sólo volcar al estado al submit:
+        if(UserState.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+        user = new UserModel
+        {
+            Name = UserState.CurrentUser.Name,
+            NickName = UserState.CurrentUser.NickName,
+            Bio = UserState.CurrentUser.Bio
+        };
+        StateHasChanged();
+
+    }
+    private async Task SubmitForm()
+    {
+        // Aquí la lógica cuando el formulario es válido
+        await UserService.UpdateUserAsync(new(){
+            UserId = UserState.CurrentUser!.UserId,
+            Name=user.Name, 
+            NickName =  user.NickName, 
+            Bio = user.Bio})
+            .ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    // Actualizar el UserState con los nuevos datos
+                    UserState.CurrentUser!.Name = user.Name;
+                    UserState.CurrentUser.NickName = user.NickName;
+                    UserState.CurrentUser.Bio = user.Bio;
+                    Snackbar.Add("User updated successfully!", Severity.Success);
+                }
+                else
+                {
+                    // Manejar errores, por ejemplo mostrar un mensaje al usuario
+                    Console.WriteLine("Error updating user: " + task.Exception?.Message);
+                    Snackbar.Add("Error updating user: " + task.Exception?.Message, Severity.Error);
+                }
+            });
+    }
+
+    public class UserModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; }
+
+        [Required(ErrorMessage = "NickName is required")]
+        public string NickName { get; set; }
+
+        [Required(ErrorMessage = "Bio is required")]
+        public string Bio { get; set; }
+    }
+}

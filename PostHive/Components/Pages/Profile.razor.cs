@@ -15,7 +15,6 @@ public partial class Profile
 
     private EditContext? _editPostContext;
     private PostModel _postModel = new();
-    private EditContext? _editUserUpdate;
     private UserUpdate _userModelUpdate = new();
 
     private int _currentUploadFiles;
@@ -40,7 +39,6 @@ public partial class Profile
     protected override Task OnInitializedAsync()
     {
         _editPostContext = new EditContext(_postModel);
-        _editUserUpdate = new EditContext(_userModelUpdate);
         return base.OnInitializedAsync();
     }
 
@@ -55,12 +53,6 @@ public partial class Profile
                 UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
                 if (UserState.CurrentUser == null)
                     throw new Exception("User not found");
-                _userModelUpdate = new UserUpdate
-                {
-                    Name = UserState.CurrentUser.Name, NickName = UserState.CurrentUser.NickName,
-                    Bio = UserState.CurrentUser.Bio
-                };
-                _editUserUpdate = new EditContext(_userModelUpdate);
                 await Task.Delay(100);
                 StateHasChanged();
             }

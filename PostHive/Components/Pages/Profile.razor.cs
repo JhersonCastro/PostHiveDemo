@@ -26,7 +26,7 @@ public partial class Profile
         [Required] [MinLength(5)] public string? NickName { get; set; }
         [MinLength(0)] public string Bio { get; set; } = "";
     }
-
+    
     public class PostModel
     {
         [Required]
@@ -44,16 +44,23 @@ public partial class Profile
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
+        if (firstRender) {
             try
             {
-                await JSRuntime.InvokeVoidAsync("startResizeObserver", _mudPaperRef, DotNetObjectReference.Create(this));
 
                 UserState.CurrentUser = await CookiesService.RetrievedUser(UserState.CurrentUser);
                 if (UserState.CurrentUser == null)
                     throw new Exception("User not found");
                 await Task.Delay(100);
+
+                if (JSRuntime is not null)
+                {
+                    await JSRuntime.InvokeVoidAsync("startResizeObserver", _mudPaperRef, DotNetObjectReference.Create(this));
+                }
+                else
+                {
+                    Console.WriteLine("JSRuntime no está disponible en este contexto.");
+                }
                 StateHasChanged();
             }
             catch (Exception ex)

@@ -27,7 +27,7 @@
                         @if (comment.UserId == CurrentUser?.UserId)
                         {
                             <MudPaper>
-                                <MudButton Color="Color.Error" OnClick="() => DeleteId(comment.CommentId)">
+                                <MudButton Color="Color.Error" OnClick="() => DeleteId(comment)">
                                     <MudIcon Icon="@Icons.Material.Filled.Delete"></MudIcon>
                                 </MudButton>
                             </MudPaper>

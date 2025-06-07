@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using PostHive.Components.Pages
 @using PostHive.Components.Pages.Tags.Dialogs
 @using Services
 @inject ThemeState ThemeState
@@ -13,7 +14,7 @@
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
-<MudDialogProvider />
+<MudDialogProvider BackdropClick="false" CloseButton="true" CloseOnEscapeKey="false" />
 
 @* Needed for snackbars *@
 <MudSnackbarProvider />
@@ -39,7 +40,7 @@ else
                     </ActivatorContent>
                     <ChildContent>
                         <MudMenuItem Href="@($"/profile")">Profile</MudMenuItem>
-                        <MudMenuItem Href="@($"/Settings")">Settings</MudMenuItem>
+                        <MudMenuItem OnClick="OpenModalAsync">Settings</MudMenuItem>
                         <MudMenuItem OnClick="async() => await Logout()">Logout</MudMenuItem>
                     </ChildContent>
                 </MudMenu>               
@@ -48,11 +49,22 @@ else
     </NavMenu>
 }
 
+
+
 @Body
 
 
 
 @code {
+    private async Task OpenModalAsync(){ 
+        var response = await DialogService.ShowAsync<Settings>(); 
+        var result = await response.Result; 
+        if (result.Canceled)
+            return;
+        await InvokeAsync(StateHasChanged);
+    }
+
+
     protected override void OnInitialized()
     {
         ThemeState.IsDark = true;

@@ -20,36 +20,26 @@ public partial class Comment : IAsyncDisposable
     {
         try
         {
+            GC.Collect();
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(NavigationManager.ToAbsoluteUri("/CommentHub"))
                 .Build();
+            
+            _hubConnection.On<string>("ReceiveDeleteComment", async (comment) =>
+            {
+                var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
+                var commentObj = JsonSerializer.Deserialize<Comments>(comment, options);
+                await RemoveComment(commentObj);
+            });
             _hubConnection.On<string>("ReceiveComment", async (comment) =>
             {
                 var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
                 var commentObj = JsonSerializer.Deserialize<Comments>(comment, options);
                 await AddComment(commentObj);
             });
-            _hubConnection.On<string>("RecDelComment", async (commentId) =>
-            {
-                var comment = post.Comments.FirstOrDefault(c => c.CommentId.ToString() == commentId);
-                await RemoveComment(comment);
-            });
             await _hubConnection.StartAsync();
-            _hubConnection.SendAsync("JoinGroup", post.PostId.ToString());
-            _hubConnection.Closed += async (error) =>
-            {
-                Console.WriteLine("Connection closed. Attempting to reconnect...");
-                await Task.Delay(5000); // Wait before reconnecting
-                try
-                {
-                    await _hubConnection.StartAsync();
-                    await _hubConnection.SendAsync("JoinGroup", post.PostId.ToString());
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Reconnection failed: {ex.Message}");
-                }
-            };
+            await _hubConnection.SendAsync("JoinGroup", post.PostId.ToString());
+           
         }
         catch (Exception ex)
         {
@@ -57,7 +47,7 @@ public partial class Comment : IAsyncDisposable
         }
     }
 
-    public async Task DeleteId(int commentId)
+    public async Task DeleteId(Comments comment)
     {
         if (_hubConnection != null)
         {
@@ -67,8 +57,9 @@ public partial class Comment : IAsyncDisposable
                 { "Content", "Are you sure you want to delete this comment?" }
             });
             var result = await response.Result;
+            //TODO: Add signalR to delete comment
             if (result is { Canceled: false })
-                await _hubConnection.SendAsync("DeleteComment", post.PostId.ToString(), commentId.ToString());
+                await RemoveComment(comment);
         }
     }
 
@@ -87,6 +78,7 @@ public partial class Comment : IAsyncDisposable
         {
             post.Comments.Remove(comment);
             await PostService.DeleteComment(comment);
+            _hubConnection.SendAsync("DeleteComment", comment);
             await InvokeAsync(StateHasChanged);
         }
     }

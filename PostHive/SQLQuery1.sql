@@ -253,14 +253,6 @@ BEGIN
 END;
 GO
 
-DECLARE @UserId INT;
-EXEC spUserRegister @Name = 'TestName',
-                    @NickName = 'TestNickDF',
-                    @Email = 'test@example.com',
-                    @Password = 'hashedPassword123',
-                    @UserId = @UserId OUTPUT;
-SELECT @UserId;
-GO
 
 IF OBJECT_ID('spUpdateAvatar', 'P') IS NOT NULL
 BEGIN

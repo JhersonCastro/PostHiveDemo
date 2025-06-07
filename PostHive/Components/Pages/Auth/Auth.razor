@@ -9,7 +9,6 @@
 
 <PageTitle>Auth</PageTitle>
 
-
     <MudContainer Style="position: absolute;">
         <MudContainer style="@((!IsLoginActive ? "display:block;" : "display:none;"))">
             <MudPaper Elevation="3" style="padding: 32px; width: 300px;">
@@ -29,7 +28,6 @@
 
 @code{
     public bool IsLoginActive = false;
-
     public void ChangeForm()
     {
         IsLoginActive = !IsLoginActive;

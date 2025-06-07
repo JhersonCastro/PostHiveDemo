@@ -5,10 +5,10 @@ namespace PostHive.Services
     /// <summary>
     /// Service for interacting with the browser's localStorage using JavaScript Interop.
     /// </summary>
-    public class LocalStorageService
+    public class LocalStorageService : IAsyncDisposable
     {
         private readonly IJSRuntime jsRuntime;
-
+        private DotNetObjectReference<LocalStorageService>? dotNetRef;
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalStorageService"/> class.
         /// </summary>
@@ -56,6 +56,14 @@ namespace PostHive.Services
         public async Task ClearAsync()
         {
             await jsRuntime.InvokeVoidAsync("localStorage.clear");
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (dotNetRef is not null)
+            {
+                dotNetRef.Dispose();
+            }
         }
     }
 }

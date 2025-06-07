@@ -12,8 +12,11 @@
 <script>
     let observers = new Map();
 
-    function startResizeObserver(element, dotNetHelper) {
-        if (!element) return;
+        function startResizeObserver(element, dotNetHelper) {
+        if (!(element instanceof Element)) {
+            console.warn("Invalid element passed to ResizeObserver:", element);
+            return;
+        }
 
         const observer = new ResizeObserver(entries => {
             for (let entry of entries) {
@@ -25,6 +28,7 @@
         observer.observe(element);
         observers.set(element, observer);
     }
+
 
     function stopResizeObserver(element) {
         const observer = observers.get(element);

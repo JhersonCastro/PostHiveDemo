@@ -26,9 +26,9 @@ namespace PostHive.SignalR
             await Clients.OthersInGroup(postId).SendAsync("ReceiveComment", comment);
         }
         [HubMethodName("DeleteComment")]
-        public async Task DeleteComment(string postId, string commentId)
+        public async Task DeleteComment(string postId, string comment)
         {
-            await Clients.OthersInGroup(postId).SendAsync("RecDelComment", postId, commentId);
+            await Clients.OthersInGroup(postId).SendAsync("ReceiveDeleteComment", comment);
         }
     }
 }

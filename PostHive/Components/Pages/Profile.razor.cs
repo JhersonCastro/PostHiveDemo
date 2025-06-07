@@ -138,7 +138,7 @@ public partial class Profile
                     StateHasChanged();
                 }
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 
                 Snackbar.Add($"Error uploading file {file.Name} the file is too long (max file size: {Const.MaxFileSizePost / 1000000}Mb)", Severity.Error);

@@ -59,7 +59,15 @@ public partial class Comment : IAsyncDisposable
             var result = await response.Result;
             //TODO: Add signalR to delete comment
             if (result is { Canceled: false })
+            {
+                var options = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve
+                };
+                var commentJson = JsonSerializer.Serialize(comment, options);
+                await _hubConnection.SendAsync("DeleteComment", commentJson);
                 await RemoveComment(comment);
+            }
         }
     }
 
@@ -78,7 +86,6 @@ public partial class Comment : IAsyncDisposable
         {
             post.Comments.Remove(comment);
             await PostService.DeleteComment(comment);
-            _hubConnection.SendAsync("DeleteComment", comment);
             await InvokeAsync(StateHasChanged);
         }
     }

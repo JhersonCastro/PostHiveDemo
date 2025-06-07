@@ -18,26 +18,32 @@
             <MudPaper>
                 @if (flagSameUser)
                 {
-                    @foreach (var post in UserContext.Posts.OrderByDescending(p => p.CreatedDate))
+                    @if (UserContext.Posts != null)
                     {
-                        <PostHive.Components.Pages.Tags.Posts.Post
-                        CurrentPost="@post" CurrentUser="CurrentUser"
-                        OnDeleteClick="DeleteId">
-                        </PostHive.Components.Pages.Tags.Posts.Post>
-                        <br />
-                        <hr />
-                        <br />
+                        foreach (var post in UserContext.Posts.OrderByDescending(p => p.CreatedDate))
+                        {
+                            <PostHive.Components.Pages.Tags.Posts.Post
+                                CurrentPost="@post" CurrentUser="CurrentUser"
+                                OnDeleteClick="DeleteId">
+                            </PostHive.Components.Pages.Tags.Posts.Post>
+                            <br/>
+                            <hr/>
+                            <br/>
+                        }
                     }
                 }
                 else
                 {
-                    @foreach (var post in UserContext.Posts.OrderByDescending(p => p.CreatedDate))
+                    @if (UserContext.Posts != null)
                     {
-                        <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="CurrentUser">
-                        </PostHive.Components.Pages.Tags.Posts.Post>
-                        <br />
-                        <hr />
-                        <br />
+                        foreach (var post in UserContext.Posts.OrderByDescending(p => p.CreatedDate))
+                        {
+                            <PostHive.Components.Pages.Tags.Posts.Post CurrentPost="@post" CurrentUser="CurrentUser">
+                            </PostHive.Components.Pages.Tags.Posts.Post>
+                            <br/>
+                            <hr/>
+                            <br/>
+                        }
                     }
                 }
             </MudPaper>
@@ -68,9 +74,9 @@
             UserContext?.Posts.Remove(post);
             Snackbar.Add("Post Deleted", Severity.Success);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            UserContext?.Posts.Remove(post);
+            if (post != null) UserContext?.Posts.Remove(post);
         }
     }
 }

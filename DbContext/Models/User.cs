@@ -10,7 +10,7 @@ namespace DbContext.Models
     public class User
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
         public int UserId { get; init; }
 
         [StringLength(50)]

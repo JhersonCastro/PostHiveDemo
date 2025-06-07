@@ -66,6 +66,7 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+//SignalR Hubs
 app.MapHub<CommentHub>("/CommentHub");
 app.MapHub<ChatHub>("/ChatHub");
 

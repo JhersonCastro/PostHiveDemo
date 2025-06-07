@@ -14,7 +14,6 @@ namespace PostHive.SignalR
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, postId);
             Console.WriteLine($"Client {Context.ConnectionId} joined group {postId}");
-
         }
         public async Task LeaveGroup(string postId)
         {

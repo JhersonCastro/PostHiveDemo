@@ -26,6 +26,11 @@ namespace PostHive.Services
             this.localStorageService = localStorageService;
         }
 
+        public async Task RemoveLocalCookies()
+        {
+            await localStorageService.RemoveItemAsync("CurrentSession");
+        }
+
         /// <summary>
         /// Retrieves a user by the session cookie stored in local storage or returns the provided user if not null.
         /// </summary>

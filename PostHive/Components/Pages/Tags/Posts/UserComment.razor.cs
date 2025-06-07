@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using DbContext.Models;
+﻿using DbContext.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.JSInterop;
+using MudBlazor;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PostHive.Components.Pages.Tags.Posts;
 
@@ -39,10 +41,13 @@ public partial class UserComment : IAsyncDisposable
         }
     }
 
+
+
     /// <summary>
     /// Send a comment to the post
     /// </summary>
     /// <param name="editContext">The context of the form</param>
+    private MudTextField<string>? _textFieldRef;
     private async Task HandlerSend(EditContext editContext)
     {
         var model = (CommentModel)editContext.Model;
@@ -60,19 +65,33 @@ public partial class UserComment : IAsyncDisposable
 
                 if (_hubConnection is { State: HubConnectionState.Connected })
                 {
-                    comment.User = CurrentUser;
-                    comment.Files = new List<Files>();
+                    comment.User = new User
+                    {
+                        UserId = CurrentUser.UserId,
+                        Name = CurrentUser.Name,
+                        NickName = CurrentUser.NickName,
+                        Avatar = CurrentUser.Avatar
+                    };
+                    //TODO: Add files to comment if needed
+                    comment.Files = null;
 
                     var options = new JsonSerializerOptions
                     {
                         ReferenceHandler = ReferenceHandler.Preserve
                     };
+                    Console.WriteLine($"Enviado a {Post.PostId} grupo");
                     var commentJson = JsonSerializer.Serialize(comment, options);
                     await _hubConnection.SendAsync("SendComment", Post.PostId.ToString(), commentJson);
                 }
             }
 
-            if (_commentModel != null) _commentModel.CommentText = string.Empty;
+            if (_commentModel != null)
+            {
+                _commentModel.CommentText = string.Empty;
+                if (_textFieldRef != null)
+                    await _textFieldRef.Clear();
+                Snackbar.Add("Comment send successfully!", Severity.Success);
+            }
             StateHasChanged();
         }
         catch (Exception e)

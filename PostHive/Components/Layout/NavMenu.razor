@@ -1,18 +1,20 @@
 ﻿@inject NavigationManager navigationManager
 <header >
     <MudNavMenu Class="navbar navbar-expand-lg">
-        <MudNavLink Href="/" Ripple >Bucket Network</MudNavLink>
+        <MudNavLink Href="/" Ripple >PostHive</MudNavLink>
         @ChildContent
         @if(_userModel != null){
-            <EditForm class="" EditContext="_editContext" OnSubmit="HandlerSubmit" autocomplete="off">
+            <EditForm class="" style="margin-right:1rem" EditContext="_editContext" OnSubmit="HandlerSubmit" autocomplete="off">
                 <MudTextField @bind-Value="@_userModel.Nickname" Label="@("@")" Placeholder="Username" InputType="InputType.Text"></MudTextField>
             </EditForm>
         }
+        @UserIcon
     </MudNavMenu>
 </header>
 @code{
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? UserIcon { get; set; }
 
     private EditContext? _editContext;
     private UserName? _userModel;

@@ -5,7 +5,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @inject PostService PostService
 @inject NavigationManager Navigation
-
+@inject ISnackbar Snackbar
 @if (CurrentUser != null && _commentModel != null)
 {
     <div class="mt-5 row">
@@ -23,7 +23,7 @@
                 <MudCard>
                     <MudCardContent>
                         <MudText Typo="Typo.h4">@CurrentUser.Name</MudText>
-                        <MudTextField autocomplete="false" T="string" @bind-Value="@_commentModel.CommentText" FullWidth="true" Label="Enter your comment here..." Style="margin-top: 1rem;" />
+                        <MudTextField @ref="_textFieldRef" autocomplete="false" T="string" @bind-Value="@_commentModel.CommentText" FullWidth="true" Label="Enter your comment here..." Style="margin-top: 1rem;" />
                     </MudCardContent>
                     <MudCardActions class="d-flex justify-content-end">
                         <MudButton 

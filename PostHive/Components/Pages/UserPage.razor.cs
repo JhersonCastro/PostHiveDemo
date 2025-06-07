@@ -55,7 +55,8 @@ public partial class UserPage
 
             if (user == null)
                 throw new Exception("User not found");
-
+            if (user.UserId.Equals(UserState.CurrentUser?.UserId))
+                NavigationManager.NavigateTo("/profile");
             _userContext = new User
             {
                 UserId = user.UserId,

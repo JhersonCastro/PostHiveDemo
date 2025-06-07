@@ -22,27 +22,34 @@ public partial class Comment : IAsyncDisposable
         {
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(NavigationManager.ToAbsoluteUri("/CommentHub"))
-                .ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Debug))
                 .Build();
-
-            _hubConnection.On<string, string>("ReceiveComment", async (postId, json) =>
+            _hubConnection.On<string>("ReceiveComment", async (comment) =>
             {
-                if (postId == post.PostId.ToString())
-                {
-                    var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
-                    var comment = JsonSerializer.Deserialize<Comments>(json, options);
-                    await AddComment(comment);
-                }
+                var options = new JsonSerializerOptions { ReferenceHandler = ReferenceHandler.Preserve };
+                var commentObj = JsonSerializer.Deserialize<Comments>(comment, options);
+                await AddComment(commentObj);
             });
-            _hubConnection.On<string, string>("RecDelComment", async (postId, commentId) =>
+            _hubConnection.On<string>("RecDelComment", async (commentId) =>
             {
-                if (postId == post.PostId.ToString())
-                {
-                    var comment = post.Comments.FirstOrDefault(c => c.CommentId.ToString() == commentId);
-                    await RemoveComment(comment);
-                }
+                var comment = post.Comments.FirstOrDefault(c => c.CommentId.ToString() == commentId);
+                await RemoveComment(comment);
             });
             await _hubConnection.StartAsync();
+            _hubConnection.SendAsync("JoinGroup", post.PostId.ToString());
+            _hubConnection.Closed += async (error) =>
+            {
+                Console.WriteLine("Connection closed. Attempting to reconnect...");
+                await Task.Delay(5000); // Wait before reconnecting
+                try
+                {
+                    await _hubConnection.StartAsync();
+                    await _hubConnection.SendAsync("JoinGroup", post.PostId.ToString());
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Reconnection failed: {ex.Message}");
+                }
+            };
         }
         catch (Exception ex)
         {

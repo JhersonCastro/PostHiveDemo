@@ -61,6 +61,7 @@ public partial class Profile
                 else
                 {
                     Console.WriteLine("JSRuntime no está disponible en este contexto.");
+                    mediaSectionWidth = 280; // Default width if JSRuntime is not available
                 }
                 StateHasChanged();
             }

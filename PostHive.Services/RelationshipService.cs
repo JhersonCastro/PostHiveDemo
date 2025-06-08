@@ -15,11 +15,14 @@ namespace PostHive.Services
     }
     public class RelationshipService(IDbContextFactory<DatabaseContext> contextFactory)
     {
+        /// <summary>
+        /// Retrieves a list of users that the specified user has blocked.
+        /// </summary>
+        /// <param name="user">The user for whom to retrieve blocked users.</param>
+        /// <returns>A list of blocked users.</returns>
         public async Task<List<User>> GetBlockedUsersAsync(User user)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            // Get all relationships where the user is either UserId or RelationshipUserIdA and the status is blocked
-            
             var blockedUsers = await context.Users
                 .Where(u => context.Relationship.Any(r =>
                     (r.UserId == user.UserId && r.RelationshipUserIdA == u.UserId) ||
@@ -28,10 +31,16 @@ namespace PostHive.Services
                 .ToListAsync();
             return blockedUsers;
         }
+
+        /// <summary>
+        /// Blocks a user by creating or updating a relationship with the "blocked" status.
+        /// </summary>
+        /// <param name="userA">The user initiating the block.</param>
+        /// <param name="userB">The user to be blocked.</param>
+        /// <returns>An ActionType indicating the result of the operation.</returns>
         public async Task<ActionType> BlockUserAsync(User userA, User userB)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            // Check if the relationship exists
             var relationship = await context.Relationship.FirstOrDefaultAsync(p =>
                 (p.UserId == userA.UserId && p.RelationshipUserIdA == userB.UserId) ||
                 (p.UserId == userB.UserId && p.RelationshipUserIdA == userA.UserId));
@@ -61,10 +70,16 @@ namespace PostHive.Services
                 return ActionType.Error;
             }
         }
+
+        /// <summary>
+        /// Sets or updates the relationship between two users based on the current status.
+        /// </summary>
+        /// <param name="userA">The user initiating the action.</param>
+        /// <param name="userB">The other user involved in the relationship.</param>
+        /// <returns>An ActionType indicating the result of the operation.</returns>
         public async Task<ActionType> SetRelationshipAsync(User userA, User userB)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
-            //Check if the Relationship exists
             var relationship = await context.Relationship.FirstOrDefaultAsync(p =>
             (p.UserId == userA.UserId && p.RelationshipUserIdA == userB.UserId) ||
             (p.UserId == userB.UserId && p.RelationshipUserIdA == userA.UserId));
@@ -80,11 +95,9 @@ namespace PostHive.Services
                 await context.SaveChangesAsync();
                 return ActionType.Request;
             }
-            //Now, we know that the relationship exists, but how is its status?            
-            //1st Check if the UserA (User that clicked the button)
+
             if (IsGenerateByUserA(relationship, userA))
             {
-                //If the relationship is in request status, we remove the relationship
                 context.Relationship.Remove(relationship);
                 await context.SaveChangesAsync();
                 return ActionType.Remove;
@@ -110,6 +123,13 @@ namespace PostHive.Services
             Console.WriteLine("Se guardo correctamente" + relationship.ToString());
             return s;
         }
+
+        /// <summary>
+        /// Retrieves the relationship between two users, if it exists.
+        /// </summary>
+        /// <param name="userA">The first user.</param>
+        /// <param name="userB">The second user.</param>
+        /// <returns>The relationship between the two users, or null if none exists.</returns>
         public async Task<Relationship?> GetRelationship(User userA, User userB)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -121,6 +141,13 @@ namespace PostHive.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
+
+        /// <summary>
+        /// Retrieves the appropriate icon for the relationship between two users.
+        /// </summary>
+        /// <param name="userA">The first user.</param>
+        /// <param name="userB">The second user.</param>
+        /// <returns>A string representing the icon for the relationship.</returns>
         public async Task<string> GetRelationIcon(User userA, User userB)
         {
             Relationship? relationship = await GetRelationship(userA, userB);
@@ -144,6 +171,13 @@ namespace PostHive.Services
                 _ => Icons.Material.Filled.Cancel,
             };
         }
+
+        /// <summary>
+        /// Determines if the relationship was initiated by the specified user.
+        /// </summary>
+        /// <param name="relationship">The relationship to check.</param>
+        /// <param name="userA">The user to verify.</param>
+        /// <returns>True if the relationship was initiated by the user, otherwise false.</returns>
         private bool IsGenerateByUserA(Relationship? relationship, User userA)
         {
             return relationship != null && relationship.UserId == userA.UserId;

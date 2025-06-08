@@ -11,10 +11,56 @@ namespace PostHive.Services
         Request,
         Add,
         Block,
+        Error
     }
     public class RelationshipService(IDbContextFactory<DatabaseContext> contextFactory)
     {
-
+        public async Task<List<User>> GetBlockedUsersAsync(User user)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            // Get all relationships where the user is either UserId or RelationshipUserIdA and the status is blocked
+            
+            var blockedUsers = await context.Users
+                .Where(u => context.Relationship.Any(r =>
+                    (r.UserId == user.UserId && r.RelationshipUserIdA == u.UserId) ||
+                    (r.UserId == u.UserId && r.RelationshipUserIdA == user.UserId) &&
+                    r.Status == RelationshipStatus.blocked))
+                .ToListAsync();
+            return blockedUsers;
+        }
+        public async Task<ActionType> BlockUserAsync(User userA, User userB)
+        {
+            await using var context = await contextFactory.CreateDbContextAsync();
+            // Check if the relationship exists
+            var relationship = await context.Relationship.FirstOrDefaultAsync(p =>
+                (p.UserId == userA.UserId && p.RelationshipUserIdA == userB.UserId) ||
+                (p.UserId == userB.UserId && p.RelationshipUserIdA == userA.UserId));
+            try
+            {
+                if (relationship == null)
+                {
+                    Relationship newRelationship = new Relationship
+                    {
+                        UserId = userA.UserId,
+                        RelationshipUserIdA = userB.UserId,
+                        Status = RelationshipStatus.blocked
+                    };
+                    await context.Relationship.AddAsync(newRelationship);
+                    await context.SaveChangesAsync();
+                    return ActionType.Block;
+                }
+                relationship.Status = RelationshipStatus.blocked;
+                context.Relationship.Update(relationship);
+                await context.SaveChangesAsync();
+                Console.WriteLine("Se guardo correctamente" + relationship.ToString());
+                return ActionType.Block;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return ActionType.Error;
+            }
+        }
         public async Task<ActionType> SetRelationshipAsync(User userA, User userB)
         {
             await using var context = await contextFactory.CreateDbContextAsync();

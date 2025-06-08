@@ -9,6 +9,11 @@ namespace PostHive.Services
 {
     public class PostService(IDbContextFactory<DatabaseContext> contextFactory, IWebHostEnvironment webHotEnv, RelationshipService relationshipService)
     {
+        /// <summary>
+        /// Retrieves a post by its ID, including related user, files, and comments.
+        /// </summary>
+        /// <param name="postId">The ID of the post to retrieve.</param>
+        /// <returns>The post if found, otherwise null.</returns>
         public async Task<Post?> GetPostByIdAsync(int postId)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -19,44 +24,12 @@ namespace PostHive.Services
                 .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(p => p.PostId == postId);
             return post;
-        }
-        public async Task<List<Post>> GetRandomPosts(int max = 25)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
+        }     
 
-            var totalPosts = await context.Posts.CountAsync();
-
-            var random = new Random();
-            var randomIdx = Enumerable.Range(0, totalPosts)
-                .OrderBy(x => random.Next())
-                .Take(max)
-                .ToList();
-
-            var randomPosts = await context.Posts
-                .Include(p => p.Files)
-                .Include(p => p.Comments)
-                .ThenInclude(c => c.User)
-                .Where(p => randomIdx.Contains(p.PostId))
-                .ToListAsync();
-
-            return randomPosts;
-        }
-
-        public async Task<List<Post>?> GetPostsByUserId(int UserId)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.Posts
-                .Where(p => p.UserId == UserId)
-                .Include(p => p.Comments)
-                .ThenInclude(c => c.User)
-                .ToListAsync();
-        }
-
-        public async Task<List<Post>> GetPostsAsync()
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            return await context.Posts.ToListAsync();
-        }
+        /// <summary>
+        /// Adds a comment to a specific post.
+        /// </summary>
+        /// <param name="comments">The comment to add.</param>
         public async Task SetCommentToPost(Comments comments)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -64,6 +37,10 @@ namespace PostHive.Services
             await context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Deletes a specific comment from a post.
+        /// </summary>
+        /// <param name="comment">The comment to delete.</param>
         public async Task DeleteComment(Comments comment)
         {
             try
@@ -78,6 +55,13 @@ namespace PostHive.Services
                 Console.WriteLine(ex.Message);
             }
         }
+
+        /// <summary>
+        /// Retrieves posts created by a specific user, filtered by privacy settings and relationship status.
+        /// </summary>
+        /// <param name="userRequest">The user whose posts to retrieve.</param>
+        /// <param name="user">The user making the request.</param>
+        /// <returns>A list of posts visible to the requesting user.</returns>
         public async Task<List<Post>> GetPostsAsync(User userRequest, User? user)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -108,6 +92,15 @@ namespace PostHive.Services
 
             return posts;
         }
+
+        /// <summary>
+        /// Retrieves a specific post by ID, filtered by privacy settings and relationship status.
+        /// </summary>
+        /// <param name="userRequest">The user whose post to retrieve.</param>
+        /// <param name="user">The user making the request.</param>
+        /// <param name="postId">The ID of the post to retrieve.</param>
+        /// <param name="getUnlistedPost">Whether to include unlisted posts in the search.</param>
+        /// <returns>The post if found and visible to the requesting user, otherwise null.</returns>
         public async Task<Post?> GetPostByIdAsync(User userRequest, User? user, int postId, bool getUnlistedPost)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -139,6 +132,11 @@ namespace PostHive.Services
 
             return posts;
         }
+
+        /// <summary>
+        /// Deletes a specific post by its ID, including related files and comments.
+        /// </summary>
+        /// <param name="postId">The ID of the post to delete.</param>
         public async Task DeletePostAsync(int postId)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -188,66 +186,11 @@ namespace PostHive.Services
                 throw new Exception("CurrentPost not found");
             }
         }
-
-        public async Task DeletePostAsync(Post post)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            context.Posts.Remove(post);
-            await context.SaveChangesAsync();
-        }
-        public async Task UpdatePostAsync(Post post)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            var existingPost = await context.Posts
-                                             .Include(p => p.Files)
-                                             .FirstOrDefaultAsync(p => p.PostId == post.PostId);
-
-            if (existingPost == null)
-            {
-                throw new Exception("CurrentPost not found");
-            }
-
-            foreach (var file in existingPost.Files)
-            {
-                var trackedFile = context.ChangeTracker.Entries<Files>()
-                                  .FirstOrDefault(e => e.Entity.FilesId == file.FilesId);
-                if (trackedFile != null)
-                {
-                    context.Entry(trackedFile.Entity).State = EntityState.Detached;
-                }
-            }
-
-            var filesToRemove = existingPost.Files
-                                            .Where(f => post.Files.All(pf => pf.FilesId != f.FilesId))
-                                            .ToList();
-            foreach (var file in filesToRemove)
-            {
-                context.Remove(file);
-            }
-
-            context.Entry(existingPost).CurrentValues.SetValues(post);
-
-            foreach (var file in post.Files)
-            {
-                var trackedFile = context.ChangeTracker.Entries<Files>()
-                                  .FirstOrDefault(e => e.Entity.FilesId == file.FilesId);
-                if (trackedFile != null)
-                {
-                    context.Entry(trackedFile.Entity).State = EntityState.Detached;
-                }
-                existingPost.Files.Add(file);
-            }
-
-            try
-            {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-
+        /// <summary>
+        /// Creates a new post, including its related files.
+        /// </summary>
+        /// <param name="post">The post to create.</param>
+        /// <returns>The created post with its generated ID.</returns>
         public async Task<Post?> CreatePostAsync(Post post)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
@@ -286,11 +229,6 @@ namespace PostHive.Services
             }
             post.PostId = (int)postIdOutput.Value;
             return post;
-            //await using var context = await contextFactory.CreateDbContextAsync();
-            //await context.Posts.AddAsync(post);
-            //await context.SaveChangesAsync();
-            //return post;
         }
-
     }
 }

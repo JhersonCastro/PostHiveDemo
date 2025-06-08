@@ -2,6 +2,7 @@
 @inject IWebHostEnvironment WebHotEnv
 @inject RelationshipService RelationshipService
 @inject UserState UserState
+@inject NavigationManager NavigationManager
 @if (loading)
 {
     <PostHive.Components.Pages.Tags.Utils.SpinCircle></PostHive.Components.Pages.Tags.Utils.SpinCircle>
@@ -54,7 +55,7 @@ else
                         Class="position-absolute start-0 ms-5 mt-3 top-0">
                             <MudFab 
                                 StartIcon="@Icons.Material.Filled.Block"
-                            >
+                                    OnClick="(async() => await BlockUser())">
                             </MudFab>
                             <MudFab 
                                 OnClick="(async() => await SetRelationship())" 
@@ -99,6 +100,16 @@ else
         StateHasChanged();
     }
     //TODO: Move this a better place
+    private async Task BlockUser()
+    {
+        if (UserState.CurrentUser != null && _userContext != UserState.CurrentUser)
+        {
+            loading = true;
+            StateHasChanged();
+            await RelationshipService.BlockUserAsync(UserState.CurrentUser, _userContext);
+            NavigationManager.NavigateTo("/");
+        } 
+    }
     private async Task SetRelationship()
     {
         if (UserState.CurrentUser != null && _userContext != UserState.CurrentUser)

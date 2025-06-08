@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PostHive.Services
 {
-    public class UserService(IDbContextFactory<DatabaseContext> contextFactory)
+    public class UserService(IDbContextFactory<DatabaseContext> contextFactory, RelationshipService relationshipService)
     {
         /// <summary>
         /// Creates a new user in the database using a stored procedure and returns the created user with their posts and files.
@@ -195,6 +195,7 @@ namespace PostHive.Services
         /// A string representing the name or nickname to search for. 
         /// If null, an empty list will be returned.
         /// </param>
+        /// <param name="currentUser"></param>
         /// <returns>
         /// An asynchronous task that resolves to a list of <see cref="User"/> objects 
         /// whose names or nicknames start with the specified prompt.
@@ -203,16 +204,28 @@ namespace PostHive.Services
         /// This method normalizes the input prompt by trimming whitespace and converting it to lowercase. 
         /// It performs a case-insensitive search on both the Name and NickName fields.
         /// </remarks>
-        public async Task<List<User>> PredictUserAsync(string? nameOrNickname)
+        public async Task<List<User>> PredictUserAsync(string? nameOrNickname, User? currentUser)
         {
             await using var context = await contextFactory.CreateDbContextAsync();
+            
             if (nameOrNickname == null)
                 return new List<User>();
             string normalizedPrompt = nameOrNickname.Trim().ToLower();
-            return await context.Users
-                .Where(u => u.NickName.Trim().ToLower().StartsWith(normalizedPrompt) ||
-                            u.Name.Trim().ToLower().StartsWith(normalizedPrompt))
+            if(currentUser == null)
+            {
+                return await context.Users
+                    .Where(u => u.NickName.Trim().ToLower().StartsWith(normalizedPrompt) ||
+                                u.Name.Trim().ToLower().StartsWith(normalizedPrompt))
+                    .ToListAsync();
+            }
+            //Get users that CurrentUser is blocked
+            var blockedUsers = await relationshipService.GetBlockedUsersAsync(currentUser);
+            var listUsers = await context.Users
+                .Where(u => (u.NickName.Trim().ToLower().StartsWith(normalizedPrompt) ||
+                             u.Name.Trim().ToLower().StartsWith(normalizedPrompt)&&
+                             currentUser.UserId != u.UserId && blockedUsers.All(p => p.UserId != u.UserId))) // Exclude the current user
                 .ToListAsync();
+            return listUsers;
         }
     }
 }

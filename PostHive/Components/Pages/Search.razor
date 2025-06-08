@@ -1,6 +1,7 @@
 ﻿@page "/Search"
 @using Services
 @inject UserService UserServices
+@inject UserState UserState
 <PageTitle></PageTitle>
 <div>
     @if (!string.IsNullOrEmpty(_errorMessage))
@@ -41,15 +42,16 @@
     public string? Username { get; set; }
     private List<User> _users = [];
     private string? _errorMessage;
+    //TODO: Fix this, retrieve the UserState.CurrentUser from the UserState service for that JSInterop call to worker successfully
+    // (Use AfterRenderAsync because Javascript only run when the page is rendered)
     protected override async Task OnInitializedAsync()
     {
         _users.Clear();
         await Task.Delay(150);
-        _users = await UserServices.PredictUserAsync(Username);
+        _users = await UserServices.PredictUserAsync(Username, UserState.CurrentUser);
         if (_users.Count == 0)
             _errorMessage = "No users found";
         StateHasChanged();
 
     }
-
 }

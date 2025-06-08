@@ -47,6 +47,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RelationshipService>();
 builder.Services.AddScoped<PostService>();
 
+//States
 builder.Services.AddScoped<UserState>();
 builder.Services.AddScoped<ThemeState>();
 builder.Services.AddHttpContextAccessor();

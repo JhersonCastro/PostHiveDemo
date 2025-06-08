@@ -59,6 +59,7 @@ public partial class UserPage
                 UserId = user.UserId,
                 Name = user.Name,
                 NickName = user.NickName,
+                Bio = user.Bio,
                 Avatar = user.Avatar,
                 Posts = await PostService.GetPostsAsync(user, UserState.CurrentUser),
                 Friends = await UserService.GetFriendsAsync(user.UserId)

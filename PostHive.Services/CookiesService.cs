@@ -7,24 +7,16 @@ namespace PostHive.Services
     /// <summary>
     /// Service for handling user session cookies.
     /// </summary>
-    public class CookiesService
+    public class CookiesService(
+            IDbContextFactory<DatabaseContext> contextFactory,
+            LocalStorageService localStorageService)
     {
-        private readonly IDbContextFactory<DatabaseContext> contextFactory;
-        private readonly LocalStorageService localStorageService;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CookiesService"/> class.
         /// </summary>
         /// <param name="contextFactory">Factory for creating database contexts.</param>
         /// <param name="localStorageService">Service for accessing local storage.</param>
-        public CookiesService(
-            IDbContextFactory<DatabaseContext> contextFactory,
-            LocalStorageService localStorageService)
-        {
-            this.contextFactory = contextFactory;
-            this.localStorageService = localStorageService;
-        }
-
+       
         public async Task RemoveLocalCookies()
         {
             await localStorageService.RemoveItemAsync("CurrentSession");
@@ -123,6 +115,17 @@ namespace PostHive.Services
             }
             return null;
         }
+        /// <summary>
+        /// Retrieves a list of friends for a given user based on their relationships.
+        /// </summary>
+        /// <param name="userId">The ID of the user whose friends are to be retrieved.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains a list of users who are friends with the specified user.
+        /// </returns>
+        /// <remarks>
+        /// This method queries the database to find all relationships where the user is either the initiator or the receiver of the relationship,
+        /// and the relationship status is "accept". It then combines these results to produce a list of friends.
+        /// </remarks>
         private async Task<List<User>> GetFriendsAsync(int userId)
         {
             await using var context = await contextFactory.CreateDbContextAsync();

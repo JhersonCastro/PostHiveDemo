@@ -73,12 +73,12 @@
                         <!-- Acciones: carga de archivos y botón de envío -->
                         <MudGrid Justify="Justify.FlexEnd" AlignItems="Center" Class="mt-2">
                             <!-- Carga de archivos -->
+                            @*TODO: Adds a snackbar for Const.MaxFileCount*@
                             <MudItem>
                                 <MudFileUpload 
                                     T="IReadOnlyList<IBrowserFile>" 
                                         FilesChanged="BtnUploadPostFiles" 
-                                        Accept=".png,.jpg,.jpeg,.mp4" 
-                                        MaximumFileCount="@Const.MaxFileCount">
+                                        Accept=".png,.jpg,.jpeg,.mp4">
                                     <ActivatorContent>
                                         <MudIcon Icon="@Icons.Material.Rounded.FileUpload" Class="mud-icon-size-large IconHover" />
                                     </ActivatorContent>

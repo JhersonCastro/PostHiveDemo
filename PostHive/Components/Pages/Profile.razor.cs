@@ -54,6 +54,7 @@ public partial class Profile
                     throw new Exception("User not found");
                 await Task.Delay(100);
 
+                mediaSectionWidth = 280;
                 if (JSRuntime is not null)
                 {
                     await JSRuntime.InvokeVoidAsync("startResizeObserver", _mudPaperRef, DotNetObjectReference.Create(this));
@@ -61,7 +62,6 @@ public partial class Profile
                 else
                 {
                     Console.WriteLine("JSRuntime no está disponible en este contexto.");
-                    mediaSectionWidth = 280; // Default width if JSRuntime is not available
                 }
                 StateHasChanged();
             }
@@ -189,6 +189,9 @@ public partial class Profile
     public void UpdateWidth(double newWidth)
     {
         // Update the width to be 1/3 of the MudPaper's width
+        if (newWidth < 600)
+            newWidth = 600;
+        
         mediaSectionWidth = newWidth / 3;
         StateHasChanged();
     }

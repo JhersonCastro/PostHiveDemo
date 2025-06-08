@@ -49,15 +49,6 @@ namespace PostHive.Services
             await jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
         }
 
-        /// <summary>
-        /// Clears all items from the browser's localStorage.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task ClearAsync()
-        {
-            await jsRuntime.InvokeVoidAsync("localStorage.clear");
-        }
-
         public async ValueTask DisposeAsync()
         {
             if (dotNetRef is not null)

@@ -80,20 +80,76 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+[![Product Name Screen Shot][product-screenshot]](http://posthive.tryasp.net/)
 
-There are many great README templates available on GitHub; however, I didn't find one that really suited my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need -- I think this is it.
+PostHive is a social platform prototype designed for university purposes, aimed at facilitating the creation and interaction with user-generated content. The project provides a structured, simple, and safe environment for users to express their ideas through posts and comments.
 
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should implement DRY principles to the rest of your life :smile:
+The platform is designed to be open, intuitive, and responsive, allowing users to interact with others in a shared space that prioritizes accessibility and ethical digital practices.
 
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue. Thanks to all the people have contributed to expanding this template!
+### General Objective
 
-Use the `BLANK_README.md` to get started.
+To design and implement an interactive web platform where users can register, publish content, and engage with others through comments, promoting a respectful community through basic behavioral guidelines.
+
+### Specific Objectives
+
+- Develop a secure and functional authentication system using **bcrypt**
+- Implement features to create, edit, and delete public posts
+- Create a comment system associated with each post
+- Design a responsive and user-friendly interface for both mobile and desktop devices
+- Apply best practices in security and accessibility throughout the platform
+
+### Project Scope
+
+**Included:**
+- User registration and login system
+- Content creation, editing, and visualization
+- Comment functionality on posts
+- Responsive UI using MudBlazor and Bootstrap
+
+**Not included:**
+- Administrative moderation tools
+- User reports or sanctions
+- Private messaging system
+- Social media integration
+- Monetization or advertisements
+
+### Core Features
+
+- 🔐 **Authentication:** Register, log in, and recover accounts using secure bcrypt-hashed passwords  
+- 📝 **Posts:** Create, edit, delete, and view user-generated content  
+- 💬 **Comments:** Comment on posts with simple interaction features  
+- 📱 **Responsive Design:** Optimized layout using MudBlazor and Bootstrap  
+- 💾 **Database:** SQL Server managed with Entity Framework
+
+### System Architecture
+
+The platform follows a layered architecture:
+
+- **Frontend:** Developed using Blazor WebAssembly with MudBlazor for UI components and Bootstrap for additional styling
+- **Backend:** Built with C# using Blazor Server or WebAssembly features
+- **Database:** Relational model implemented using SQL Server, accessed through Entity Framework Core
+- **Security:** Authentication handled via bcrypt, with proper input validation and secure data handling practices
+
+### Technologies Used
+
+| Component       | Technology                      |
+|----------------|----------------------------------|
+| Frontend        | Blazor + MudBlazor + Bootstrap  |
+| Backend         | C# with Blazor                  |
+| Database        | SQL Server + Entity Framework   |
+| Authentication  | bcrypt                          |
+
+### Ethical and Security Considerations
+
+The system promotes core digital ethics: inclusion, respect, and responsible freedom of expression. Although there is no active moderation system, it is assumed that users will adhere to basic community norms. Personal data is protected through secure development practices and privacy-oriented design.
+
+### Conclusion
+
+PostHive aims to be a practical demonstration of modern web development using Blazor and C#, focusing on user interaction, ethical responsibility, and clean architectural design. The project serves as a functional educational tool, highlighting the creation of a social platform with real-world patterns, adapted to academic requirements and constraints.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
 
 
 

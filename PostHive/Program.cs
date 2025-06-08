@@ -38,6 +38,8 @@ builder.Services.AddDbContextFactory<DatabaseContext>(
                 sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             })
 );
+
+//Services
 builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<CookiesService>();
 

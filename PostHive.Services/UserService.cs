@@ -44,6 +44,11 @@ namespace PostHive.Services
             }
             return newUser;
         }
+        /// <summary>
+        /// Updates the user information in the database.
+        /// </summary>
+        /// <param name="userChange">The user object containing updated information.</param>
+        /// <exception cref="Exception">Thrown if the nickname is already in use by another user.</exception>
         public async Task UpdateUserAsync(User userChange)
         {
             await using var context = await contextFactory.CreateDbContextAsync();

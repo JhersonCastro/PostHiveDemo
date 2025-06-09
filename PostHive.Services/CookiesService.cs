@@ -1,6 +1,7 @@
 ﻿using DbContext;
 using DbContext.Models;
 using Microsoft.EntityFrameworkCore;
+using Z.EntityFramework.Plus;
 
 namespace PostHive.Services
 {
@@ -9,7 +10,8 @@ namespace PostHive.Services
     /// </summary>
     public class CookiesService(
             IDbContextFactory<DatabaseContext> contextFactory,
-            LocalStorageService localStorageService)
+            LocalStorageService localStorageService,
+            UserService userService)
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CookiesService"/> class.
@@ -92,64 +94,32 @@ namespace PostHive.Services
         {
             // Find the cookie in the database.
             await using var context = await contextFactory.CreateDbContextAsync();
-            var user = await context.Cookies.FirstOrDefaultAsync(p => p.CookieCurrentSession == cookie);
+            var user = await context.Cookies
+                .Where(p => p.CookieCurrentSession == cookie)
+                .FromCacheAsync($"{CacheTags.Cookie}{cookie}");
             if (user != null)
             {
                 //TODO: Friends instance
-
+                var transforCookie = user.FirstOrDefault();
+                
                 // If the cookie is found, retrieve the associated user, including related posts, files, comments, and friends.
 
                 var getUser = await context.Users.AsNoTracking()
+                    .Where(u => u.UserId == transforCookie.UserId)
                     .Include(u => u.Posts)
                     .ThenInclude(p => p.Files)
                     .Include(u => u.Posts)
                     .ThenInclude(p => p.Comments)
                     .ThenInclude(c => c.User)
-                    //.Include(f => f)
-                    .FirstOrDefaultAsync(u => u.UserId == user.UserId);
+                    .FromCacheAsync($"{CacheTags.CurrentUser}{transforCookie.UserId}");
                 if (getUser != null)
                 {
-                    getUser.Friends = await GetFriendsAsync(getUser.UserId);
-                    return getUser;
+                    var currentUser = getUser.FirstOrDefault();
+                    currentUser.Friends = await userService.GetFriendsAsync(currentUser.UserId);
+                    return currentUser;
                 }
             }
             return null;
-        }
-        /// <summary>
-        /// Retrieves a list of friends for a given user based on their relationships.
-        /// </summary>
-        /// <param name="userId">The ID of the user whose friends are to be retrieved.</param>
-        /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains a list of users who are friends with the specified user.
-        /// </returns>
-        /// <remarks>
-        /// This method queries the database to find all relationships where the user is either the initiator or the receiver of the relationship,
-        /// and the relationship status is "accept". It then combines these results to produce a list of friends.
-        /// </remarks>
-        private async Task<List<User>> GetFriendsAsync(int userId)
-        {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            var user = await context.Users
-                .Include(u => u.RelationshipsInitiated)
-                .ThenInclude(r => r.RelatedUser)
-                .Include(u => u.RelationshipsReceived)
-                .ThenInclude(r => r.User)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-
-            if (user != null)
-            {
-                var friends = user.RelationshipsInitiated
-                    .Where(r => r.Status == RelationshipStatus.accept)
-                    .Select(r => r.RelatedUser)
-                    .Union(user.RelationshipsReceived
-                        .Where(r => r.Status == RelationshipStatus.accept)
-                        .Select(r => r.User))
-                    .ToList();
-
-                return friends;
-            }
-
-            return new List<User>();
         }
     }
 }

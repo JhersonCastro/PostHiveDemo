@@ -44,13 +44,13 @@ builder.Services.AddMemoryCache();
 
 
 //Services
-builder.Services.AddScoped<LocalStorageService>();
-builder.Services.AddScoped<CookiesService>();
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<RelationshipService>();
 builder.Services.AddScoped<PostService>();
 
+builder.Services.AddScoped<LocalStorageService>();
+builder.Services.AddScoped<CookiesService>();
 //States
 builder.Services.AddScoped<UserState>();
 builder.Services.AddScoped<ThemeState>();

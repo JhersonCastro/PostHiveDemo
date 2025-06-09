@@ -2,6 +2,7 @@
 using DbContext.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Z.EntityFramework.Plus;
 
 namespace PostHive.Services
 {
@@ -125,32 +126,32 @@ namespace PostHive.Services
         /// </summary>
         /// <param name="userId">The user ID.</param>
         /// <returns>A list of users who are friends with the specified user.</returns>
-        public async Task<List<User>> GetFriendsAsync(int userId)
+        public async Task<List<User>> GetFriendsAsync(int userId, CancellationToken cancellationToken = default)
         {
-            await using var context = await contextFactory.CreateDbContextAsync();
-            var user = await context.Users
-                .Include(u => u.RelationshipsInitiated)
-                .ThenInclude(r => r.RelatedUser)
-                .Include(u => u.RelationshipsReceived)
-                .ThenInclude(r => r.User)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            await using var context = await contextFactory
+                .CreateDbContextAsync(cancellationToken);
 
-            if (user != null)
-            {
-                // Filtrar relaciones con estado 'accept' y combinar iniciadas y recibidas
-                var friends = user.RelationshipsInitiated
-                    .Where(r => r.Status == RelationshipStatus.accept)
-                    .Select(r => r.RelatedUser) // Amigos desde las relaciones iniciadas
-                    .Union(user.RelationshipsReceived
-                        .Where(r => r.Status == RelationshipStatus.accept)
-                        .Select(r => r.User)) // Amigos desde las relaciones recibidas
-                    .ToList();
+            // 1) Construimos el IQueryable<User>
+            var friendsQuery = context.Relationship
+                .Where(r =>
+                    (r.UserId == userId || r.RelationshipUserIdA == userId)
+                    && r.Status == RelationshipStatus.accept
+                )
+                .Select(r => r.UserId == userId
+                    ? r.RelatedUser
+                    : r.User
+                );
 
-                return friends; // Lista final de amigos
-            }
+            // 2) Aplicamos AsNoTracking + FromCache + ToListAsync
+            var friends = await friendsQuery
+                .AsNoTracking()
+                .FromCacheAsync($"{CacheTags.Friends}{userId}");
 
-            return new List<User>(); // Devuelve una lista vacía si el usuario no existe
+            var allTags = QueryCacheManager.CacheTags;
+
+            return friends.ToList();
         }
+
 
         /// <summary>
         /// Verifies a plain text password against a hashed password using BCrypt.

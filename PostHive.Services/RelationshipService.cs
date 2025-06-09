@@ -2,7 +2,7 @@
 using DbContext.Models;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor;
-
+using Z.EntityFramework.Plus;
 namespace PostHive.Services
 {
     public enum ActionType
@@ -40,10 +40,13 @@ namespace PostHive.Services
         /// <returns>An ActionType indicating the result of the operation.</returns>
         public async Task<ActionType> BlockUserAsync(User userA, User userB)
         {
+            QueryCacheManager.ExpireTag($"{CacheTags.Friends}{userA.UserId}");
+            QueryCacheManager.ExpireTag($"{CacheTags.Friends}{userB.UserId}");
             await using var context = await contextFactory.CreateDbContextAsync();
             var relationship = await context.Relationship.FirstOrDefaultAsync(p =>
                 (p.UserId == userA.UserId && p.RelationshipUserIdA == userB.UserId) ||
                 (p.UserId == userB.UserId && p.RelationshipUserIdA == userA.UserId));
+            
             try
             {
                 if (relationship == null)
@@ -79,6 +82,8 @@ namespace PostHive.Services
         /// <returns>An ActionType indicating the result of the operation.</returns>
         public async Task<ActionType> SetRelationshipAsync(User userA, User userB)
         {
+            QueryCacheManager.ExpireTag($"{CacheTags.Friends}{userA.UserId}");
+            QueryCacheManager.ExpireTag($"{CacheTags.Friends}{userB.UserId}");
             await using var context = await contextFactory.CreateDbContextAsync();
             var relationship = await context.Relationship.FirstOrDefaultAsync(p =>
             (p.UserId == userA.UserId && p.RelationshipUserIdA == userB.UserId) ||

@@ -13,7 +13,7 @@ else
         <MudItem xs="12" sm="9" md="8" lg="5">
             <MudCard Elevation="25">
                 <MudCardHeader Class="justify-content-center position-relative">
-                    <MudImage ObjectPosition="ObjectPosition.Center" Src="@($"{Const.url}/Doctypes/Avatars/{_userContext.Avatar}")" Style="max-height:200px;"></MudImage>
+                    <MudImage ObjectPosition="ObjectPosition.Center" Src="@($"{Const.BlobContainerUrl}/Doctypes/Avatars/{_userContext.Avatar}")" Style="max-height:200px;"></MudImage>
                     @if (uploadFiles.HasDelegate)
                     {
 

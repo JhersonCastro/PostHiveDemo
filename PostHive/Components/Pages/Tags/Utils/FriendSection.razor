@@ -6,7 +6,7 @@
         var topFriends = Friends.Take(9);
         foreach (var friend in topFriends)
         {
-            var imagePath = $"Doctypes/Avatars/{friend.Avatar}";
+            var imagePath = $"{Const.BlobContainerUrl}/Doctypes/Avatars/{friend.Avatar}";
             var linkPath = $"{Const.url}/User/{friend.UserId}";
 
             <MudItem xs="6" sm = "6" md ="4">

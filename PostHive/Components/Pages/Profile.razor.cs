@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
 using MudBlazor;
+using PostHive.Services;
 using System.ComponentModel.DataAnnotations;
 
 namespace PostHive.Components.Pages;
@@ -106,9 +107,12 @@ public partial class Profile
     private readonly string[] _allowedExtensions = ["jpg", "mp4", "png", "jpeg"];
     private readonly Dictionary<Files, double> _fileProgresses = new Dictionary<Files, double>();
 
+    [Inject]
+    private AzureBlobService AzureBlobService { get; set; } = default!;
     private async Task BtnUploadPostFiles(IReadOnlyList<IBrowserFile> files)
     {
         _currentUploadFiles += files.Count();
+
         foreach (var file in files)
         {
             try
@@ -116,34 +120,18 @@ public partial class Profile
                 if (!_allowedExtensions.Contains(file.Name.Split('.').Last()))
                     throw new Exception("Invalid file type");
 
-                var fileName = Path.GetFileName(file.Name);
-                var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
-                var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes", uniqueFileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+                
+                using var stream = file.OpenReadStream(Const.MaxFileSizePost);
+                await AzureBlobService.UploadFileAsync($"Doctypes/{uniqueFileName}", stream, file.ContentType);
 
-
-                await using var fileStream = new FileStream(path, FileMode.Create);
-
-                var buffer = new byte[81920];
-                var readBytes = 0;
-                var readStream = file.OpenReadStream(Const.MaxFileSizePost);
-
-                long totalBytes = file.Size;
-                long uploadedBytes = 0;
                 var tempFile = new Files { Uri = uniqueFileName, FileType = file.ContentType };
-
-                while ((readBytes = await readStream.ReadAsync(buffer)) != 0)
-                {
-                    await fileStream.WriteAsync(buffer, 0, readBytes);
-                    uploadedBytes += readBytes;
-                    var progress = (uploadedBytes / (double)totalBytes) * 100;
-                    _fileProgresses[tempFile] = progress;
-                    StateHasChanged();
-                }
+                _fileProgresses[tempFile] = 100; // Se marca como completado
+                StateHasChanged();
             }
             catch (IOException)
             {
-
-                Snackbar.Add($"Error uploading file {file.Name} the file is too long (max file size: {Const.MaxFileSizePost / Const.Mb}Mb)", Severity.Error);
+                Snackbar.Add($"Error uploading file {file.Name} (max file size: {Const.MaxFileSizePost / Const.Mb}Mb)", Severity.Error);
             }
 
             _currentUploadFiles--;

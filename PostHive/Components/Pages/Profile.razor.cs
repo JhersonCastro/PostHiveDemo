@@ -122,8 +122,11 @@ public partial class Profile
 
 
                 await using var fileStream = new FileStream(path, FileMode.Create);
+                var bufferSize = file.Size > 50 * Const.Mb ? 2 * Const.Mb :
+                 file.Size > 10 * Const.Mb ? 1 * Const.Mb :
+                 524288; // Default 512 KB
 
-                var buffer = new byte[81920];
+                Memory<byte> buffer = new byte[bufferSize];
                 var readBytes = 0;
                 var readStream = file.OpenReadStream(Const.MaxFileSizePost);
 
@@ -131,22 +134,27 @@ public partial class Profile
                 long uploadedBytes = 0;
                 var tempFile = new Files { Uri = uniqueFileName, FileType = file.ContentType };
 
-                while ((readBytes = await readStream.ReadAsync(buffer)) != 0)
+                while ((readBytes = await readStream.ReadAsync(buffer)) > 0)
                 {
-                    await fileStream.WriteAsync(buffer, 0, readBytes);
+                    await fileStream.WriteAsync(buffer[..readBytes]);
                     uploadedBytes += readBytes;
                     var progress = (uploadedBytes / (double)totalBytes) * 100;
                     _fileProgresses[tempFile] = progress;
                     StateHasChanged();
                 }
             }
-            catch (IOException)
+            catch (InvalidOperationException ex)
             {
-
-                Snackbar.Add($"Error uploading file {file.Name} the file is too long (max file size: {Const.MaxFileSizePost / Const.Mb}Mb)", Severity.Error);
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
             }
-
-            _currentUploadFiles--;
+            catch (IOException ex)
+            {
+                Snackbar.Add($"File upload failed: {file.Name}. Error: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _currentUploadFiles--;
+            }
         }
     }
 

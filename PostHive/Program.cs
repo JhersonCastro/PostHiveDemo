@@ -39,6 +39,10 @@ builder.Services.AddDbContextFactory<DatabaseContext>(
             })
 );
 
+//Cache
+builder.Services.AddMemoryCache();
+
+
 //Services
 builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<CookiesService>();

@@ -109,52 +109,54 @@ public partial class Profile
     private async Task BtnUploadPostFiles(IReadOnlyList<IBrowserFile> files)
     {
         _currentUploadFiles += files.Count();
-        foreach (var file in files)
+        var uploadTasks = files.Select(file => UploadFile(file)).ToList();
+        await Task.WhenAll(uploadTasks);
+    }
+    public async Task UploadFile(IBrowserFile file)
+    {
+        try
         {
-            try
+            if (!_allowedExtensions.Contains(file.Name.Split('.').Last()))
+                throw new Exception("Invalid file type");
+
+            var fileName = Path.GetFileName(file.Name);
+            var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
+            var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes", uniqueFileName);
+
+
+            await using var fileStream = new FileStream(path, FileMode.Create);
+            var bufferSize = file.Size > 50 * Const.Mb ? 2 * Const.Mb :
+             file.Size > 10 * Const.Mb ? 1 * Const.Mb :
+             524288; // Default 512 KB
+
+            Memory<byte> buffer = new byte[bufferSize];
+            var readBytes = 0;
+            var readStream = file.OpenReadStream(Const.MaxFileSizePost);
+
+            long totalBytes = file.Size;
+            long uploadedBytes = 0;
+            var tempFile = new Files { Uri = uniqueFileName, FileType = file.ContentType };
+
+            while ((readBytes = await readStream.ReadAsync(buffer)) > 0)
             {
-                if (!_allowedExtensions.Contains(file.Name.Split('.').Last()))
-                    throw new Exception("Invalid file type");
-
-                var fileName = Path.GetFileName(file.Name);
-                var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(fileName)}";
-                var path = Path.Combine(WebHotEnv.WebRootPath, "Doctypes", uniqueFileName);
-
-
-                await using var fileStream = new FileStream(path, FileMode.Create);
-                var bufferSize = file.Size > 50 * Const.Mb ? 2 * Const.Mb :
-                 file.Size > 10 * Const.Mb ? 1 * Const.Mb :
-                 524288; // Default 512 KB
-
-                Memory<byte> buffer = new byte[bufferSize];
-                var readBytes = 0;
-                var readStream = file.OpenReadStream(Const.MaxFileSizePost);
-
-                long totalBytes = file.Size;
-                long uploadedBytes = 0;
-                var tempFile = new Files { Uri = uniqueFileName, FileType = file.ContentType };
-
-                while ((readBytes = await readStream.ReadAsync(buffer)) > 0)
-                {
-                    await fileStream.WriteAsync(buffer[..readBytes]);
-                    uploadedBytes += readBytes;
-                    var progress = (uploadedBytes / (double)totalBytes) * 100;
-                    _fileProgresses[tempFile] = progress;
-                    StateHasChanged();
-                }
+                await fileStream.WriteAsync(buffer[..readBytes]);
+                uploadedBytes += readBytes;
+                var progress = (uploadedBytes / (double)totalBytes) * 100;
+                _fileProgresses[tempFile] = progress;
+                StateHasChanged();
             }
-            catch (InvalidOperationException ex)
-            {
-                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-            }
-            catch (IOException ex)
-            {
-                Snackbar.Add($"File upload failed: {file.Name}. Error: {ex.Message}", Severity.Error);
-            }
-            finally
-            {
-                _currentUploadFiles--;
-            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        catch (IOException ex)
+        {
+            Snackbar.Add($"File upload failed: {file.Name}. Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _currentUploadFiles--;
         }
     }
 

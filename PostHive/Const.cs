@@ -8,7 +8,7 @@
         public const string url = "http://posthive.tryasp.net";
         //public const string url = "http://localhost:5016";
         //public const string url = "https://posthive.me";
-        public const string BlobContainerUrl = "https://posthiveblob.blob.core.windows.net/posthivecontainer/";
+        public const string BlobContainerUrl = "https://posthiveblob.blob.core.windows.net/posthivecontainer";
 
         public const int MaxFileSize = 5242880;
         public const byte MaxFileCount = 5;

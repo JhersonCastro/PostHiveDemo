@@ -40,6 +40,11 @@ builder.Services.AddDbContextFactory<DatabaseContext>(
 );
 
 //Services
+builder.Services.AddScoped<AzureBlobService>(provider =>
+    new AzureBlobService(builder.Configuration.GetConnectionString("AzureBlobConnection"))
+    );
+
+
 builder.Services.AddScoped<LocalStorageService>();
 builder.Services.AddScoped<CookiesService>();
 

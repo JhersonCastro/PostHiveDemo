@@ -36,7 +36,7 @@
   <h3 align="center">PostHive</h3>
 
   <p align="center">
-    A Social Network for dummies!
+    A Social Network!
     <br />
     <br />
     <br />

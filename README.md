@@ -121,11 +121,11 @@ To design and implement an interactive web platform where users can register, pu
 
 The platform follows a layered architecture:
 
-- **Frontend:** Developed using Blazor WebAssembly with MudBlazor for UI components and Bootstrap for additional styling
-- **Backend:** Built with C# using Blazor Server or WebAssembly features
-- **Database:** Relational model implemented using SQL Server, accessed through Entity Framework Core
-- **Security:** Authentication handled via bcrypt, with proper input validation and secure data handling practices
-- -
+- **Frontend:** Developed using Blazor WebAssembly with MudBlazor for UI components and Bootstrap for additional styling.
+- **Backend:** Built with C# using Blazor Server or WebAssembly features.
+- **Database:** Relational model implemented using SQL Server, accessed through Entity Framework Core.
+- **Security:** Authentication handled via bcrypt, with proper input validation and secure data handling practices.
+  
 
 ### Technologies Used
 

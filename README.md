@@ -125,6 +125,7 @@ The platform follows a layered architecture:
 - **Backend:** Built with C# using Blazor Server or WebAssembly features
 - **Database:** Relational model implemented using SQL Server, accessed through Entity Framework Core
 - **Security:** Authentication handled via bcrypt, with proper input validation and secure data handling practices
+- -
 
 ### Technologies Used
 

@@ -142,7 +142,7 @@ The system promotes core digital ethics: inclusion, respect, and responsible fre
 
 ### Conclusion
 
-PostHive aims to be a practical demonstration of modern web development using Blazor and C#, focusing on user interaction, ethical responsibility, and clean architectural design. The project serves as a functional educational tool, highlighting the creation of a social platform with real-world patterns, adapted to academic requirements and constraints.
+PostHive is conceived as a practical implementation of modern web development techniques using Blazor and C#, with a focus on user experience, ethical responsibility, and clean, modular software architecture. The project serves as a functional educational environment, demonstrating the design and construction of a social networking platform by applying real-world software engineering patterns, adapted to the guidelines and constraints of an academic context.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
